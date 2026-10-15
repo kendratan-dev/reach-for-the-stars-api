@@ -1,7 +1,7 @@
 {
-  "name": "your-game-api",
+  "name": "reach-for-the-stars-api",
   "version": "1.0.0",
-  "description": "CHANGE_ME - one sentence about your game (CS 313 Software Engineering 1)",
+  "description": "Reach for the Stars is a library-hosted multiplayer trivia tournament where players independently answer educational questions, earn stars, use strategic mystery-chest rewards, and compete to finish with the highest score before the round timer ends. (CS 313 Software Engineering 1)",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -19,7 +19,7 @@
   "engines": {
     "node": ">=22"
   },
-  "author": "CHANGE_ME - your full name",
+  "author": "Kendra Shanice Tan",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^18.0.7",

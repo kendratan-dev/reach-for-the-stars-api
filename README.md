@@ -1,10 +1,10 @@
-# [Your Game Title] API
+# [Reach for the Stars] API
 
-Backend API for **[Your Game Title]**, a tournament game for the SorSU Bulan Campus library.
+Backend API for **[Reach for the Stars]**, a tournament game for the SorSU Bulan Campus library.
 CS 313 Software Engineering 1, A.Y. 2026-2027.
 
-- Developer: [Your full name] ([your GitHub username]), BSCS [3-1 or 3-2]
-- Group and game concept: [Group name]
+- Developer: [Kendra Shanice Tan] ([kendratan-dev]), BSCS [3-1]
+- Group and game concept: [Team 5] & Reach for the Stars is a library-hosted multiplayer trivia tournament where players independently answer educational questions, earn stars, use strategic mystery-chest rewards, and compete to finish with the highest score before the round timer ends.
 
 This is my own build of my group's game concept. Every commit in this repository was made by me, with Git, on my own computer or in my own Codespace.
 
