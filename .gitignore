@@ -1,0 +1,13 @@
+# dependencies - anyone can rebuild these with "npm install"
+node_modules/
+
+# secrets - never commit real passwords
+.env
+
+# editor and OS noise
+.vscode/
+.DS_Store
+Thumbs.db
+
+# logs
+*.log

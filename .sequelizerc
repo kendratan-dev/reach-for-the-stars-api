@@ -1,0 +1,9 @@
+// Tells sequelize-cli where this project keeps its files.
+const path = require('path');
+
+module.exports = {
+  config: path.resolve('src', 'config', 'database.js'),
+  'models-path': path.resolve('src', 'models'),
+  'migrations-path': path.resolve('db', 'migrations'),
+  'seeders-path': path.resolve('db', 'seeders'),
+};

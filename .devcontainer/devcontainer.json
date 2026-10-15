@@ -1,0 +1,13 @@
+{
+  "name": "CS 313 game API",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "forwardPorts": [3001],
+  "postCreateCommand": "npm install && (test -f .env || sed 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env.example > .env)",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint"]
+    }
+  }
+}
