@@ -1,13 +1,47 @@
-// A database rule was broken -> what the client should hear.
-// The key is the constraint name from YOUR migration. PostgreSQL names a
-// foreign key "<table>_<column>_fkey" when the migration does not name it.
-// Write one entry for each constraint a client can hit. Example:
-//
-//   uq_player_nickname: {
-//     status: 409,
-//     code: 'NICKNAME_TAKEN',
-//     message: 'That nickname is already used in this game.',
-//   },
-//
-// A constraint that is not listed here still answers 409, with the code CONFLICT.
-module.exports = {};
+module.exports = {
+  // Session joining & seats
+  uq_session_user_seat: {
+    status: 409,
+    code: 'ALREADY_IN_SESSION',
+    message: 'You have already joined this session.'
+  },
+  sessions_join_code_key: {
+    status: 409,
+    code: 'DUPLICATE_JOIN_CODE',
+    message: 'A session with this join code already exists.'
+  },
+
+  // Foreign keys (deleting dependent resources)
+  sessions_question_set_id_fkey: {
+    status: 409,
+    code: 'QUESTION_SET_IN_USE',
+    message: 'This question set is being used in a game session and cannot be deleted.'
+  },
+  questions_question_set_id_fkey: {
+    status: 409,
+    code: 'QUESTION_SET_HAS_QUESTIONS',
+    message: 'Cannot delete question set because it contains questions.'
+  },
+
+  // User account uniqueness
+  users_school_id_key: {
+    status: 409,
+    code: 'SCHOOL_ID_TAKEN',
+    message: 'This school ID is already registered.'
+  },
+  users_email_key: {
+    status: 409,
+    code: 'EMAIL_TAKEN',
+    message: 'This email address is already in use.'
+  },
+  users_username_key: {
+    status: 409,
+    code: 'USERNAME_TAKEN',
+    message: 'This username is already taken.'
+  },
+  hosts_username_key: {
+    status: 409,
+    code: 'HOST_USERNAME_TAKEN',
+    message: 'This host username is already taken.'
+  }
+};
