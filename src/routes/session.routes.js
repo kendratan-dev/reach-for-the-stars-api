@@ -1,19 +1,51 @@
 const { Router } = require('express');
-const controller = require('../controllers/session.controller');
+const sessionController = require('../controllers/session.controller');
+const playerController = require('../controllers/player.controller');
+const rules = require('../validators/session.validator');
+const validate = require('../middlewares/validate');
 const requireUser = require('../middlewares/require-user');
 
 const router = Router();
 
-// Code lookup and player join endpoints (no host auth required)
-router.get('/by-code/:code', controller.getByCode);
-router.post('/join', controller.join);
+// --- Host-Protected Routes ---
+router.post(
+  '/', 
+  requireUser('HOST', 'ADMIN'), 
+  rules.createRules, 
+  validate, 
+  sessionController.create
+);
 
-// Host-protected session endpoints
-router.use(requireUser('HOST', 'ADMIN'));
+router.patch(
+  '/:code', 
+  requireUser('HOST', 'ADMIN'), 
+  rules.statusRules, 
+  validate, 
+  sessionController.changeStatus
+);
 
-router.post('/', controller.create);
-router.get('/:id', controller.getById);
-router.patch('/:id/start', controller.start);
-router.patch('/:id/end', controller.end);
+// --- Open / Session Code Routes ---
+router.get(
+  '/:code', 
+  rules.codeParam, 
+  validate, 
+  sessionController.get
+);
+
+// --- Player Routes (nested under sessions) ---
+router.post(
+  '/:code/players', 
+  requireUser(), 
+  rules.joinRules, 
+  validate, 
+  playerController.join
+);
+
+router.get(
+  '/:code/players', 
+  rules.codeParam, 
+  validate, 
+  playerController.list
+);
 
 module.exports = router;

@@ -8,13 +8,19 @@ async function findOrFail(id) {
 }
 
 function isOwner(questionSet, user) {
-  return questionSet.host_id === user.user_id || user.role === 'ADMIN';
+  if (!user) return false;
+  if (user.role === 'ADMIN') return true;
+
+  // Compare host_id if attached to req.user, or fallback to user_id/host_id logic
+  const userHostId = user.host_id || user.user_id;
+  return Number(questionSet.host_id) === Number(userHostId);
 }
 
 function list(user) {
+  const hostId = user.host_id || user.user_id;
   return user.role === 'ADMIN'
     ? questionSetRepository.findAll()
-    : questionSetRepository.findAllByHost(user.user_id);
+    : questionSetRepository.findAllByHost(hostId);
 }
 
 async function get(id, user) {
@@ -26,7 +32,8 @@ async function get(id, user) {
 }
 
 function create(data, user) {
-  return questionSetRepository.create({ ...data, host_id: user.user_id });
+  const hostId = user.host_id || user.user_id;
+  return questionSetRepository.create({ ...data, host_id: hostId });
 }
 
 async function update(id, changes, user) {

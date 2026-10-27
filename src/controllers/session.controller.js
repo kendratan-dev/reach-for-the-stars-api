@@ -1,68 +1,39 @@
+const { matchedData } = require('express-validator');
 const sessionService = require('../services/session.service');
 
-async function create(req, res, next) {
-  try {
-    const session = await sessionService.createSession(req.body, req.user);
-    res.status(201).json({ data: session });
-  } catch (err) {
-    next(err);
-  }
+// Formatter helper to control what leaves the API
+function toJson(session) {
+  return {
+    code: session.join_pin,
+    status: session.status,
+    current_position: session.current_position,
+    set_id: session.set_id,
+    host_id: session.host_id,
+    created_at: session.created_at,
+  };
 }
 
-async function getById(req, res, next) {
-  try {
-    const id = parseInt(req.params.id, 10);
-    const session = await sessionService.getSession(id);
-    res.status(200).json({ data: session });
-  } catch (err) {
-    next(err);
-  }
+async function create(req, res) {
+  const { question_set_id } = matchedData(req, { locations: ['body'] });
+  const session = await sessionService.create(question_set_id, req.user);
+  res.status(201).json(toJson(session));
 }
 
-async function getByCode(req, res, next) {
-  try {
-    const session = await sessionService.getByCode(req.params.code);
-    res.status(200).json({ data: session });
-  } catch (err) {
-    next(err);
-  }
+async function get(req, res) {
+  const { code } = matchedData(req, { locations: ['params'] });
+  const session = await sessionService.findOrFail(code);
+  res.status(200).json(toJson(session));
 }
 
-async function start(req, res, next) {
-  try {
-    const id = parseInt(req.params.id, 10);
-    const session = await sessionService.startSession(id, req.user);
-    res.status(200).json({ data: session });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function end(req, res, next) {
-  try {
-    const id = parseInt(req.params.id, 10);
-    const session = await sessionService.endSession(id, req.user);
-    res.status(200).json({ data: session });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function join(req, res, next) {
-  try {
-    const { join_code, nickname } = req.body;
-    const result = await sessionService.joinSession(join_code, nickname, req.user);
-    res.status(201).json({ data: result });
-  } catch (err) {
-    next(err);
-  }
+async function changeStatus(req, res) {
+  const { code } = matchedData(req, { locations: ['params'] });
+  const { status } = matchedData(req, { locations: ['body'] });
+  const session = await sessionService.changeStatus(code, status, req.user);
+  res.status(200).json(toJson(session));
 }
 
 module.exports = {
   create,
-  getById,
-  getByCode,
-  start,
-  end,
-  join,
+  get,
+  changeStatus,
 };
