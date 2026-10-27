@@ -1,37 +1,64 @@
-const { Session, QuestionSet, SessionPlayer } = require('../models');
+const dbModels = require('../models');
 
-function create(data) {
+const Session = dbModels.Session;
+const QuestionSet = dbModels.QuestionSet;
+const SessionPlayer = dbModels.SessionPlayer;
+
+async function create(data) {
   return Session.create(data);
 }
 
-function findById(id) {
+async function findById(id) {
   return Session.findByPk(id, {
-    include: [{ model: QuestionSet }],
+    include: [
+      { model: QuestionSet },
+      { model: SessionPlayer }
+    ]
   });
 }
 
-function findByJoinCode(joinCode) {
+async function findByPin(pin) {
   return Session.findOne({
-    where: { join_code: joinCode },
-    include: [{ model: QuestionSet }],
+    where: {
+      join_code: pin
+    },
+    include: [{ model: QuestionSet }]
   });
 }
 
-function update(session, changes) {
-  return session.update(changes);
+async function findAllByHost(hostId) {
+  return Session.findAll({
+    where: { host_id: hostId },
+    include: [{ model: QuestionSet }]
+  });
 }
 
-function findPlayersBySessionId(sessionId) {
-  return SessionPlayer.findAll({
-    where: { session_id: sessionId },
-    order: [['joined_at', 'ASC']],
+async function findExistingPlayer(sessionId, userId, nickname) {
+  const { Op } = require('sequelize');
+
+  const conditions = [];
+  if (nickname) conditions.push({ nickname });
+  if (userId) conditions.push({ user_id: userId });
+
+  if (conditions.length === 0) return null;
+
+  return SessionPlayer.findOne({
+    where: {
+      session_id: sessionId,
+      [Op.or]: conditions
+    }
   });
+}
+
+async function createPlayer(data) {
+  return SessionPlayer.create(data);
 }
 
 module.exports = {
   create,
   findById,
-  findByJoinCode,
-  update,
-  findPlayersBySessionId,
+  findByPin,
+  findAllByHost,
+  findExistingPlayer,
+  createPlayer
 };

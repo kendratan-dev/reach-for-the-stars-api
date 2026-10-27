@@ -1,51 +1,43 @@
 const { Router } = require('express');
-const sessionController = require('../controllers/session.controller');
-const playerController = require('../controllers/player.controller');
+const controller = require('../controllers/session.controller');
 const rules = require('../validators/session.validator');
 const validate = require('../middlewares/validate');
 const requireUser = require('../middlewares/require-user');
 
 const router = Router();
 
-// --- Host-Protected Routes ---
+// Host: Create Session
 router.post(
-  '/', 
-  requireUser('HOST', 'ADMIN'), 
-  rules.createRules, 
-  validate, 
-  sessionController.create
+  '/',
+  requireUser('HOST', 'ADMIN'),
+  rules.createRules,
+  validate,
+  controller.create
 );
 
+// Player: Join or Rejoin Session by Code
+router.post(
+  '/:code/players',
+  requireUser('PLAYER', 'HOST', 'ADMIN'),
+  rules.joinRules,
+  validate,
+  controller.join
+);
+
+// Host: Update Session Status (e.g. LOBBY -> RUNNING -> CLOSED)
 router.patch(
-  '/:code', 
-  requireUser('HOST', 'ADMIN'), 
-  rules.statusRules, 
-  validate, 
-  sessionController.changeStatus
+  '/:code',
+  requireUser('HOST', 'ADMIN'),
+  controller.updateStatus
 );
 
-// --- Open / Session Code Routes ---
+// Shared: Get Session Info
 router.get(
-  '/:code', 
-  rules.codeParam, 
-  validate, 
-  sessionController.get
-);
-
-// --- Player Routes (nested under sessions) ---
-router.post(
-  '/:code/players', 
-  requireUser(), 
-  rules.joinRules, 
-  validate, 
-  playerController.join
-);
-
-router.get(
-  '/:code/players', 
-  rules.codeParam, 
-  validate, 
-  playerController.list
+  '/:id',
+  requireUser('HOST', 'ADMIN', 'PLAYER'),
+  rules.idParam,
+  validate,
+  controller.get
 );
 
 module.exports = router;

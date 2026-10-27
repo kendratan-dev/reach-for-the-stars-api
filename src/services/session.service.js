@@ -1,159 +1,118 @@
-const { SessionPlayer } = require('../models');
-const sessionRepository = require('../repositories/session.repository');
-const questionSetRepository = require('../repositories/question-set.repository');
-const { appError, notFound, forbidden, badRequest } = require('../errors/app-error');
+const sessionRepo = require('../repositories/session.repository');
+const { QuestionSet } = require('../models');
+const { badRequest, notFound, forbidden } = require('../errors/app-error');
 
-function generateJoinCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excludes confusing characters like 0, O, 1, I
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+function generatePin() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-function throwErr(fn, defaultMsg, status) {
-  if (fn) throw fn(defaultMsg);
-  if (appError && appError[fn]) throw appError[fn](defaultMsg);
-  const err = new Error(defaultMsg);
-  err.status = status;
-  throw err;
+function conflict(message) {
+  const err = new Error(message);
+  err.status = 409;
+  err.code = 'CONFLICT';
+  return err;
 }
 
-async function createSession(data, user) {
-  const setId = data.question_set_id;
-  const set = await questionSetRepository.findById(setId);
-  if (!set) {
-    if (notFound) throw notFound('Question set not found.');
-    const err = new Error('Question set not found.');
-    err.status = 404;
-    throw err;
+async function createSession(hostUser, payload) {
+  const { question_set_id, duration_sec } = payload;
+
+  const questionSet = await QuestionSet.findByPk(question_set_id);
+  if (!questionSet) {
+    throw notFound('Question set not found.');
   }
 
-  const userId = user.id || user.user_id;
-  if (set.host_id !== userId && user.role !== 'ADMIN') {
-    if (forbidden) throw forbidden('You do not have permission to host this set.');
-    const err = new Error('You do not have permission to host this set.');
-    err.status = 403;
-    throw err;
+  if (questionSet.host_id !== hostUser.user_id && questionSet.host_id !== hostUser.host_id) {
+    throw forbidden('You do not have permission to host a session with this question set.');
   }
 
-  // Ensure unique join code
-  let joinCode = generateJoinCode();
-  let existing = await sessionRepository.findByJoinCode(joinCode);
-  while (existing) {
-    joinCode = generateJoinCode();
-    existing = await sessionRepository.findByJoinCode(joinCode);
-  }
+  const join_code = generatePin();
+  const session = await sessionRepo.create({
+    host_id: hostUser.user_id || hostUser.host_id,
+    question_set_id,
+    join_code,
+    duration_sec: duration_sec || 30,
+    status: 'LOBBY'
+  });
 
-  const sessionData = {
-    host_id: userId,
-    question_set_id: setId,
-    join_code: joinCode,
-    status: 'WAITING',
-    duration_sec: data.duration_sec || 300,
-  };
-
-  return sessionRepository.create(sessionData);
-}
-
-async function getSession(id) {
-  const session = await sessionRepository.findById(id);
-  if (!session) {
-    if (notFound) throw notFound('Session not found.');
-    const err = new Error('Session not found.');
-    err.status = 404;
-    throw err;
-  }
   return session;
 }
 
-async function getByCode(code) {
-  const session = await sessionRepository.findByJoinCode(code.toUpperCase());
+async function joinSession(playerUser, code, payload) {
+  const { nickname } = payload;
+
+  const session = await sessionRepo.findByPin(code);
   if (!session) {
-    if (notFound) throw notFound('Invalid join code.');
-    const err = new Error('Invalid join code.');
-    err.status = 404;
-    throw err;
-  }
-  return session;
-}
-
-async function startSession(id, user) {
-  const session = await getSession(id);
-  const userId = user.id || user.user_id;
-
-  if (session.host_id !== userId && user.role !== 'ADMIN') {
-    if (forbidden) throw forbidden('You do not have permission to start this session.');
-    const err = new Error('You do not have permission to start this session.');
-    err.status = 403;
-    throw err;
+    throw notFound('Session not found.');
   }
 
-  if (session.status !== 'WAITING') {
-    const msg = `Cannot start session with status ${session.status}`;
-    if (badRequest) throw badRequest(msg);
-    const err = new Error(msg);
-    err.status = 400;
-    throw err;
+  const userId = playerUser ? (playerUser.user_id || playerUser.id) : null;
+
+  // 1. Check if returning player (rejoining)
+  const existingPlayer = await sessionRepo.findExistingPlayer(session.id, userId, nickname);
+  if (existingPlayer) {
+    return {
+      status: 200,
+      data: {
+        player_id: existingPlayer.id,
+        session_id: session.id,
+        nickname: existingPlayer.nickname,
+        rejoined: true
+      }
+    };
   }
 
-  const now = new Date();
-  const endsAt = new Date(now.getTime() + session.duration_sec * 1000);
-
-  return sessionRepository.update(session, {
-    status: 'IN_PROGRESS',
-    started_at: now,
-    ends_at: endsAt,
-  });
-}
-
-async function endSession(id, user) {
-  const session = await getSession(id);
-  const userId = user.id || user.user_id;
-
-  if (session.host_id !== userId && user.role !== 'ADMIN') {
-    if (forbidden) throw forbidden('You do not have permission to end this session.');
-    const err = new Error('You do not have permission to end this session.');
-    err.status = 403;
-    throw err;
+  // 2. Prevent NEW players from joining if session isn't LOBBY
+  if (session.status !== 'LOBBY') {
+    throw conflict('the game has already started.');
   }
 
-  return sessionRepository.update(session, {
-    status: 'COMPLETED',
-    ended_at: new Date(),
-  });
-}
-
-async function joinSession(joinCode, nickname, user = null) {
-  const session = await getByCode(joinCode);
-
-  if (session.status !== 'WAITING') {
-    const msg = 'Cannot join session that is not in WAITING state.';
-    if (badRequest) throw badRequest(msg);
-    const err = new Error(msg);
-    err.status = 400;
-    throw err;
-  }
-
-  const playerData = {
+  // 3. Create new player
+  const player = await sessionRepo.createPlayer({
     session_id: session.id,
-    nickname: nickname,
-  };
+    user_id: userId,
+    nickname
+  });
 
-  if (user && (user.id || user.user_id)) {
-    playerData.user_id = user.id || user.user_id;
+  return {
+    status: 201,
+    data: {
+      player_id: player.id,
+      session_id: session.id,
+      nickname: player.nickname,
+      rejoined: false
+    }
+  };
+}
+
+async function updateSessionStatus(hostUser, code, payload) {
+  const { status } = payload;
+  const session = await sessionRepo.findByPin(code);
+
+  if (!session) {
+    throw notFound('Session not found.');
   }
 
-  const player = await SessionPlayer.create(playerData);
-  return { player, session };
+  if (session.status === 'CLOSED' && status === 'RUNNING') {
+    throw conflict('a closed game cannot run again');
+  }
+
+  session.status = status;
+  await session.save();
+
+  return session;
+}
+
+async function getSessionById(sessionId) {
+  const session = await sessionRepo.findById(sessionId);
+  if (!session) {
+    throw notFound('Session not found.');
+  }
+  return session;
 }
 
 module.exports = {
   createSession,
-  getSession,
-  getByCode,
-  startSession,
-  endSession,
   joinSession,
+  updateSessionStatus,
+  getSessionById
 };
