@@ -1,17 +1,18 @@
 const express = require('express');
 const hubRoutes = require('./routes/hub.routes');
+const apiRoutes = require('./routes');
 
 const app = express();
 
 app.use(express.json());
 
-// 1. Mount Hub Routes directly at root level
-app.use('/', hubRoutes);
+// Mount hub routes under /api/v1 (matches BASE URL in ci-check.js)
+app.use('/api/v1', hubRoutes);
 
-// 2. Mount API Module Routes
-app.use('/api/v1', require('./routes'));
+// Mount remaining module routes
+app.use('/api/v1', apiRoutes);
 
-// 3. Catch-all 404 Handler (must remain at the very end)
+// Catch-all 404 handler
 app.use((req, res) => {
   res.status(404).json({
     error: {

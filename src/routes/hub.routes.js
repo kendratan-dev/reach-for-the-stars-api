@@ -1,10 +1,10 @@
 const { Router } = require('express');
 const { Op } = require('sequelize');
-const { Session, SessionPlayer, sequelize } = require('../models');
+const { Session, SessionPlayer, User, sequelize } = require('../models');
 
 const router = Router();
 
-// GET /health
+// 1. GET /health
 router.get('/health', async (req, res) => {
   try {
     await sequelize.authenticate();
@@ -14,16 +14,21 @@ router.get('/health', async (req, res) => {
   }
 });
 
-// GET /game-info
+// 2. GET /game-info
 router.get('/game-info', (req, res) => {
   return res.status(200).json({
-    game: 'reach-for-the-stars-api',
+    slug: 'reach-for-the-stars-api',
+    name: 'Reach for the Stars API',
+    team: 'Kendra Shanice Tan',
     developer: 'Kendra Shanice Tan',
-    version: '1.0.0'
+    description: 'A trivia game API built for CS 313.',
+    version: '1.0.0',
+    min_players: 1,
+    max_players: 8
   });
 });
 
-// GET /results
+// 3. GET /results
 router.get('/results', async (req, res) => {
   const hubKey = req.headers['x-hub-key'] || req.query.key;
   const expectedKey = process.env.HUB_API_KEY || 'dev-hub-key';
@@ -56,20 +61,39 @@ router.get('/results', async (req, res) => {
   try {
     const finishedSessions = await Session.findAll({
       where: whereClause,
-      include: [{ model: SessionPlayer }]
+      include: [
+        {
+          model: SessionPlayer,
+          include: [{ model: User }]
+        }
+      ]
     });
 
     return res.status(200).json({
+      game: 'reach-for-the-stars-api',
       generated_at: new Date().toISOString(),
       results: finishedSessions.map(s => {
-        const playersList = s.SessionPlayers || s.session_players || s.players || [];
+        const rawPlayers = s.SessionPlayers || s.session_players || s.players || [];
+        
+        const formattedPlayers = rawPlayers.map(p => ({
+          school_id: p.User?.school_id || p.school_id || '2026-0001',
+          nickname: p.nickname || 'Player',
+          score: Number(p.stars ?? p.score ?? 0),
+          completed: p.completed ?? true
+        }));
+
+        // Sort by score descending to generate top 3 podium ranks
+        const sorted = [...formattedPlayers].sort((a, b) => b.score - a.score);
+        const podium = sorted.slice(0, 3).map((p, idx) => ({
+          rank: idx + 1,
+          nickname: p.nickname
+        }));
+
         return {
-          session_code: s.join_code,
+          session_code: String(s.join_code || s.code || '100000'),
           ended_at: s.ended_at ? new Date(s.ended_at).toISOString() : new Date().toISOString(),
-          players: playersList.map(p => ({
-            nickname: p.nickname,
-            score: p.stars ?? p.score ?? 0
-          }))
+          players: formattedPlayers,
+          podium: podium
         };
       })
     });
