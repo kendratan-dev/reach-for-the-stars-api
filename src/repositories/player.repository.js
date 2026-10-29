@@ -1,28 +1,48 @@
-const { Player } = require('../models');
+const { Op } = require('sequelize');
+const dbModels = require('../models');
 
-// Finds one seat by session and user account
-function findSeat(sessionId, userId) {
-  return Player.findOne({ where: { session_id: sessionId, user_id: userId } });
+const SessionPlayer = dbModels.SessionPlayer || dbModels.Player;
+
+// Find a seat by user_id for rejoin check
+async function findSeat(sessionId, userId) {
+  if (!sessionId || !userId) return null;
+  return SessionPlayer.findOne({
+    where: {
+      session_id: sessionId,
+      user_id: userId,
+    },
+  });
 }
 
-// Counts occupied seats in a session
-function countBySession(sessionId) {
-  return Player.count({ where: { session_id: sessionId } });
+// Find if a nickname is already taken in this session
+async function findByNickname(sessionId, nickname) {
+  if (!sessionId || !nickname) return null;
+  return SessionPlayer.findOne({
+    where: {
+      session_id: sessionId,
+      nickname: nickname,
+    },
+  });
 }
 
-// Updates the last active timestamp
-function markSeen(player) {
+async function countBySession(sessionId) {
+  if (!sessionId) return 0;
+  return SessionPlayer.count({ where: { session_id: sessionId } });
+}
+
+async function markSeen(player) {
   return player.update({ last_seen_at: new Date() });
 }
 
-// Creates a new seat row
-function create(data) {
-  return Player.create(data);
+async function create(data) {
+  return SessionPlayer.create(data);
 }
 
 module.exports = {
   findSeat,
+  findByNickname,
   countBySession,
   markSeen,
   create,
+  createPlayer: create,
 };

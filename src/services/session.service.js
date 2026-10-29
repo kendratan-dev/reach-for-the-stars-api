@@ -1,118 +1,87 @@
-const sessionRepo = require('../repositories/session.repository');
-const { QuestionSet } = require('../models');
-const { badRequest, notFound, forbidden } = require('../errors/app-error');
+const sessionRepository = require('../repositories/session.repository');
+const questionSetRepository = require('../repositories/question-set.repository');
+const { notFound, forbidden, conflict } = require('../errors/app-error');
+const { constraintOf } = require('../errors/db-errors');
 
-function generatePin() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+// Hub Contract rule 5: six digits (100000 to 999999)
+function randomCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-function conflict(message) {
-  const err = new Error(message);
-  err.status = 409;
-  err.code = 'CONFLICT';
-  return err;
+async function findOrFail(code) {
+  const session = await sessionRepository.findByCode(code);
+  if (!session) {
+    throw notFound('SESSION_NOT_FOUND', `No session found with join code ${code}.`);
+  }
+  return session;
 }
 
-async function createSession(hostUser, payload) {
-  const { question_set_id, duration_sec } = payload;
-
-  const questionSet = await QuestionSet.findByPk(question_set_id);
+async function create(questionSetId, user) {
+  const questionSet = await questionSetRepository.findById(questionSetId);
   if (!questionSet) {
-    throw notFound('Question set not found.');
+    throw notFound('QUESTION_SET_NOT_FOUND', `No question set has the id ${questionSetId}.`);
   }
 
-  if (questionSet.host_id !== hostUser.user_id && questionSet.host_id !== hostUser.host_id) {
-    throw forbidden('You do not have permission to host a session with this question set.');
+  const mayUse = questionSet.host_id === user.user_id || questionSet.is_public || user.role === 'ADMIN';
+  if (!mayUse) {
+    throw forbidden('This question set belongs to another host.');
   }
 
-  const join_code = generatePin();
-  const session = await sessionRepo.create({
-    host_id: hostUser.user_id || hostUser.host_id,
-    question_set_id,
-    join_code,
-    duration_sec: duration_sec || 30,
-    status: 'LOBBY'
-  });
-
-  return session;
-}
-
-async function joinSession(playerUser, code, payload) {
-  const { nickname } = payload;
-
-  const session = await sessionRepo.findByPin(code);
-  if (!session) {
-    throw notFound('Session not found.');
-  }
-
-  const userId = playerUser ? (playerUser.user_id || playerUser.id) : null;
-
-  // 1. Check if returning player (rejoining)
-  const existingPlayer = await sessionRepo.findExistingPlayer(session.id, userId, nickname);
-  if (existingPlayer) {
-    return {
-      status: 200,
-      data: {
-        player_id: existingPlayer.id,
-        session_id: session.id,
-        nickname: existingPlayer.nickname,
-        rejoined: true
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    try {
+// In session.service.js inside create()
+return await sessionRepository.create({
+  question_set_id: questionSet.id,
+  host_id: user.user_id,
+  join_code: randomCode(),
+  duration_sec: 60,
+  status: 'LOBBY',
+});
+    } catch (error) {
+      if (constraintOf(error) !== 'sessions_join_code_key' && constraintOf(error) !== 'game_sessions_join_pin_key') {
+        throw error;
       }
-    };
-  }
-
-  // 2. Prevent NEW players from joining if session isn't LOBBY
-  if (session.status !== 'LOBBY') {
-    throw conflict('the game has already started.');
-  }
-
-  // 3. Create new player
-  const player = await sessionRepo.createPlayer({
-    session_id: session.id,
-    user_id: userId,
-    nickname
-  });
-
-  return {
-    status: 201,
-    data: {
-      player_id: player.id,
-      session_id: session.id,
-      nickname: player.nickname,
-      rejoined: false
     }
+  }
+  throw new Error('Could not find a free join code after 5 attempts.');
+}
+
+async function getSessionByCode(code) {
+  return await findOrFail(code);
+}
+
+async function changeStatus(code, status, user) {
+  const session = await findOrFail(code);
+
+  if (session.host_id !== user.user_id && user.role !== 'ADMIN') {
+    throw forbidden('This game belongs to another host.');
+  }
+
+  if (session.status === status) {
+    throw conflict('INVALID_STATUS_CHANGE', `Session is already in ${status} status.`);
+  }
+
+  const NEXT_STATUS = {
+    LOBBY: ['RUNNING', 'CLOSED'],
+    RUNNING: ['CLOSED'],
+    CLOSED: [],
   };
-}
 
-async function updateSessionStatus(hostUser, code, payload) {
-  const { status } = payload;
-  const session = await sessionRepo.findByPin(code);
-
-  if (!session) {
-    throw notFound('Session not found.');
+  if (!NEXT_STATUS[session.status] || !NEXT_STATUS[session.status].includes(status)) {
+    throw conflict('INVALID_STATUS_CHANGE', `A ${session.status} game cannot become ${status}.`);
   }
 
-  if (session.status === 'CLOSED' && status === 'RUNNING') {
-    throw conflict('a closed game cannot run again');
-  }
+  const changes = { status };
+  if (status === 'RUNNING') changes.started_at = new Date();
+  if (status === 'CLOSED') changes.ended_at = new Date();
 
-  session.status = status;
-  await session.save();
-
-  return session;
-}
-
-async function getSessionById(sessionId) {
-  const session = await sessionRepo.findById(sessionId);
-  if (!session) {
-    throw notFound('Session not found.');
-  }
-  return session;
+  return await sessionRepository.update(session, changes);
 }
 
 module.exports = {
-  createSession,
-  joinSession,
-  updateSessionStatus,
-  getSessionById
+  create,
+  createSession: create,
+  getSessionByCode,
+  changeStatus,
+  findOrFail,
 };

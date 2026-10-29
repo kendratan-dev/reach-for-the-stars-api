@@ -2,7 +2,7 @@ const dbModels = require('../models');
 
 const Session = dbModels.Session;
 const QuestionSet = dbModels.QuestionSet;
-const SessionPlayer = dbModels.SessionPlayer;
+const SessionPlayer = dbModels.SessionPlayer || dbModels.Player;
 
 async function create(data) {
   return Session.create(data);
@@ -54,11 +54,17 @@ async function createPlayer(data) {
   return SessionPlayer.create(data);
 }
 
+async function update(session, changes) {
+  return await session.update(changes);
+}
+
 module.exports = {
   create,
   findById,
   findByPin,
+  findByCode: findByPin, // Alias for findByCode
   findAllByHost,
   findExistingPlayer,
-  createPlayer
+  createPlayer,
+  update,
 };

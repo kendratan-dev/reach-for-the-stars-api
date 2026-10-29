@@ -3,10 +3,11 @@ const questionSetService = require('../services/question-set.service');
 
 function toJson(questionSet) {
   return {
-    id: questionSet.set_id,
+    id: questionSet.id,
     title: questionSet.title,
     subject: questionSet.subject,
-    is_public: questionSet.is_public,
+    description: questionSet.description,
+    grade_level: questionSet.grade_level,
     host_id: questionSet.host_id,
     created_at: questionSet.created_at,
   };

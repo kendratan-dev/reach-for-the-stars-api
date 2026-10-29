@@ -19,22 +19,21 @@ module.exports = {
       hostId = newHosts[0].id;
     }
 
-    // 2. Fetch existing users for game players
-    let [users] = await db.query(`SELECT user_id FROM users ORDER BY user_id ASC LIMIT 4;`);
+    // 2. Fetch player accounts (excluding user_id 1 to avoid constraint conflicts)
+    let [users] = await db.query(`SELECT user_id FROM users WHERE user_id > 1 ORDER BY user_id ASC LIMIT 4;`);
 
-    // If fewer than 4 users exist, automatically seed missing users
-    if (users.length < 4) {
+    // If fewer than 3 valid player users exist, seed dedicated players for this session
+    if (users.length < 3) {
       await db.query(`
         INSERT INTO users (school_id, full_name, email, role, username, password_hash, created_at)
         VALUES 
           ('2099-0010', 'Player Ten', 'player10@test.test', 'PLAYER', 'user10', 'hash', NOW()),
           ('2099-0011', 'Player Eleven', 'player11@test.test', 'PLAYER', 'user11', 'hash', NOW()),
-          ('2099-0012', 'Player Twelve', 'player12@test.test', 'PLAYER', 'user12', 'hash', NOW()),
-          ('2099-0013', 'Player Thirteen', 'player13@test.test', 'PLAYER', 'user13', 'hash', NOW())
+          ('2099-0012', 'Player Twelve', 'player12@test.test', 'PLAYER', 'user12', 'hash', NOW())
         ON CONFLICT (school_id) DO NOTHING;
       `);
       
-      [users] = await db.query(`SELECT user_id FROM users ORDER BY user_id ASC LIMIT 4;`);
+      [users] = await db.query(`SELECT user_id FROM users WHERE user_id > 1 ORDER BY user_id ASC LIMIT 4;`);
     }
 
     // 3. Seed Question Set using valid hostId
@@ -63,26 +62,27 @@ module.exports = {
         (${q2[0].id}, 0, 'A', true), (${q2[0].id}, 1, 'B', false);
     `);
 
-// 6. Seed Session with a unique random 6-digit code
-const randomPin = String(Math.floor(100000 + Math.random() * 900000));
+    // 6. Seed Session with a unique random 6-digit code
+    const randomPin = String(Math.floor(100000 + Math.random() * 900000));
 
-const [sessions] = await db.query(`
-  INSERT INTO sessions (host_id, question_set_id, join_code, status, duration_sec, started_at, ended_at, created_at)
-  VALUES (${hostId}, ${setId}, '${randomPin}', 'ENDED', 300, NOW() - INTERVAL '10 MINUTE', NOW(), NOW())
-  RETURNING id;
-`);
-const sessionId = sessions[0].id;
+    const [sessions] = await db.query(`
+      INSERT INTO sessions (host_id, question_set_id, join_code, status, duration_sec, started_at, ended_at, created_at)
+      VALUES (${hostId}, ${setId}, '${randomPin}', 'ENDED', 300, NOW() - INTERVAL '10 MINUTE', NOW(), NOW())
+      RETURNING id;
+    `);
+    const sessionId = sessions[0].id;
 
-    // 7. Seed Session Players
+    // 7. Seed 3 Session Players for this finished game
     const [players] = await db.query(`
       INSERT INTO session_players (session_id, user_id, nickname, stars, correct_count, answer_count, joined_at)
       VALUES 
         (${sessionId}, ${users[0].user_id}, 'Player1', 5, 2, 2, NOW()),
-        (${sessionId}, ${users[1].user_id}, 'Player2', 4, 2, 2, NOW())
+        (${sessionId}, ${users[1].user_id}, 'Player2', 4, 2, 2, NOW()),
+        (${sessionId}, ${users[2].user_id}, 'Player3', 3, 2, 2, NOW())
       RETURNING id;
     `);
 
-    // 8. Seed Answers
+    // 8. Seed Answers for all 3 players
     for (let i = 0; i < players.length; i++) {
       const [ans] = await db.query(`
         INSERT INTO answers (player_id, question_id, is_correct, answer_time_ms, stars_earned)

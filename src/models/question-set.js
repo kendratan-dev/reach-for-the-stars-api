@@ -2,22 +2,12 @@ module.exports = (sequelize, DataTypes) =>
   sequelize.define(
     'QuestionSet',
     {
-      set_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        field: 'id',
-      },
+      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       host_id: { type: DataTypes.INTEGER, allowNull: false },
       title: { type: DataTypes.STRING(255), allowNull: false },
-      description: { type: DataTypes.TEXT, allowNull: true },
-      subject: { type: DataTypes.STRING(100), allowNull: true },
-      grade_level: { type: DataTypes.STRING(50), allowNull: true },
+      description: { type: DataTypes.TEXT },
+      subject: { type: DataTypes.STRING(100) },
+      grade_level: { type: DataTypes.STRING(50) },
     },
-    {
-      tableName: 'question_sets',
-      timestamps: true,
-      createdAt: 'created_at',
-      updatedAt: false,
-    }
+    { tableName: 'question_sets', timestamps: true, createdAt: 'created_at', updatedAt: false }
   );

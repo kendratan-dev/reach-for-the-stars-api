@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/question-sets/{{setId}}"
+method: PATCH
+headers:
+  X-Demo-User: "{{host}}"
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Philippine Literature 101\"\r
+
+    }"
+order: 10000

@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/question-sets/{{setId}}"
+method: PATCH
+headers:
+  X-Demo-User: "{{otherHost}}"
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Hacked Title\"\r
+
+    }"
+order: 11000

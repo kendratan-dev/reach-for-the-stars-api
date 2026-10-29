@@ -1,10 +1,14 @@
 const { Router } = require('express');
-const questionSetRoutes = require('./question-set.routes');
-const sessionRoutes = require('./session.routes');
+const currentUser = require('../middlewares/current-user');
 
 const router = Router();
 
-router.use('/question-sets', questionSetRoutes);
-router.use('/sessions', sessionRoutes);
+router.use(currentUser);
+
+// Mount Module 1 (Question Sets)
+router.use('/question-sets', require('./question-set.routes'));
+
+// Mount Module 2 (Sessions)
+router.use('/sessions', require('./session.routes'));
 
 module.exports = router;

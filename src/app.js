@@ -1,17 +1,24 @@
-// Builds the Express app. Does NOT start listening - server.js does that.
 const express = require('express');
-const routes = require('./routes');
-const notFound = require('./middlewares/not-found');
-const errorHandler = require('./middlewares/error-handler');
+const hubRoutes = require('./routes/hub.routes');
 
 const app = express();
 
 app.use(express.json());
 
-// Hub Contract: every endpoint lives under /api/v1
-app.use('/api/v1', routes);
+// 1. Mount Hub Routes directly at root level
+app.use('/', hubRoutes);
 
-app.use(notFound);
-app.use(errorHandler);
+// 2. Mount API Module Routes
+app.use('/api/v1', require('./routes'));
+
+// 3. Catch-all 404 Handler (must remain at the very end)
+app.use((req, res) => {
+  res.status(404).json({
+    error: {
+      code: 'NOT_FOUND',
+      message: `Cannot ${req.method} ${req.originalUrl}`
+    }
+  });
+});
 
 module.exports = app;

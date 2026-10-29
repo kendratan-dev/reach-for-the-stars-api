@@ -1,43 +1,19 @@
 const { Router } = require('express');
-const controller = require('../controllers/session.controller');
+const sessionController = require('../controllers/session.controller');
+const playerController = require('../controllers/player.controller');
 const rules = require('../validators/session.validator');
 const validate = require('../middlewares/validate');
 const requireUser = require('../middlewares/require-user');
 
 const router = Router();
 
-// Host: Create Session
-router.post(
-  '/',
-  requireUser('HOST', 'ADMIN'),
-  rules.createRules,
-  validate,
-  controller.create
-);
+// Host endpoints
+router.post('/', requireUser('HOST', 'ADMIN'), rules.createRules, validate, sessionController.create);
+router.get('/:code', rules.codeParam, validate, sessionController.get);
+router.patch('/:code', requireUser('HOST', 'ADMIN'), rules.statusRules, validate, sessionController.changeStatus);
 
-// Player: Join or Rejoin Session by Code
-router.post(
-  '/:code/players',
-  requireUser('PLAYER', 'HOST', 'ADMIN'),
-  rules.joinRules,
-  validate,
-  controller.join
-);
-
-// Host: Update Session Status (e.g. LOBBY -> RUNNING -> CLOSED)
-router.patch(
-  '/:code',
-  requireUser('HOST', 'ADMIN'),
-  controller.updateStatus
-);
-
-// Shared: Get Session Info
-router.get(
-  '/:id',
-  requireUser('HOST', 'ADMIN', 'PLAYER'),
-  rules.idParam,
-  validate,
-  controller.get
-);
+// Player endpoints mounted under /sessions/:code
+router.post('/:code/players', requireUser(), rules.joinRules, validate, playerController.join);
+router.get('/:code/players', rules.codeParam, validate, playerController.list);
 
 module.exports = router;

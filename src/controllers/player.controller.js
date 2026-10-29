@@ -6,21 +6,25 @@ async function join(req, res) {
   const { session, player, created } = await playerService.join(code, nickname, req.user);
 
   res.status(created ? 201 : 200).json({
-    player_id: player.id || player.player_id,
+    player_id: player.id,
     nickname: player.nickname,
-    score: player.score || 0,
+    score: player.stars || 0,
     rejoined: !created,
     session: {
-      code: session.join_pin || session.join_code,
+      code: session.join_code,
       status: session.status,
     },
   });
 }
 
 async function list(req, res) {
-  const { code } = matchedData(req);
+  const { code } = req.params;
   const players = await playerService.listBySession(code);
   res.status(200).json(players);
 }
 
-module.exports = { join, list };
+module.exports = { 
+  join, 
+  list, 
+  listBySession: list 
+};

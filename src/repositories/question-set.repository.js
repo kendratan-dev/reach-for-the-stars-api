@@ -1,11 +1,11 @@
 const { QuestionSet, Question, Choice } = require('../models');
 
 function findAll() {
-  return QuestionSet.findAll({ order: [['set_id', 'ASC']] });
+  return QuestionSet.findAll({ order: [['id', 'ASC']] });
 }
 
 function findAllByHost(hostId) {
-  return QuestionSet.findAll({ where: { host_id: hostId }, order: [['set_id', 'ASC']] });
+  return QuestionSet.findAll({ where: { host_id: hostId }, order: [['id', 'ASC']] });
 }
 
 function findById(id) {
