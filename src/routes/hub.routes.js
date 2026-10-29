@@ -20,7 +20,7 @@ router.get('/game-info', (req, res) => {
     slug: 'reach-for-the-stars-api',
     name: 'Reach for the Stars API',
     team: 'Kendra Shanice Tan',
-    developer: 'Kendra Shanice Tan',
+    developer: 'kendratan-dev',
     description: 'A trivia game API built for CS 313.',
     version: '1.0.0',
     min_players: 1,
