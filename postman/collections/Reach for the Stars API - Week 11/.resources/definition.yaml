@@ -1,8 +1,0 @@
-$kind: collection
-variables:
-  code: ""
-  baseUrl: ""
-  host: ""
-  otherHost: ""
-  player: ""
-  setId: ""

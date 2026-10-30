@@ -1,5 +1,2 @@
 name: Globals
-values:
-  - key: code
-    value: ''
-    enabled: true
+values: []
