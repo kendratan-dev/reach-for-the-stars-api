@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/question-sets/{{setId}}"
+method: PATCH
+headers:
+  X-Demo-User: "{{host}}"
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Philippine Literature 101\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });"
+    language: text/javascript
+order: 10000

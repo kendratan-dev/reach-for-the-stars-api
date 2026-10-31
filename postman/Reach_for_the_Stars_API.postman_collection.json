@@ -18,7 +18,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status is 201\", function () {\r\n  pm.response.to.have.status(201);\r\n});\r\n\r\n// Automatically save the newly created ID to the collection variable\r\nconst jsonData = pm.response.json();\r\npm.collectionVariables.set(\"setId\", jsonData.id);"
+                  "pm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\n// Save the created ID for later requests\r\npm.collectionVariables.set(\"setId\", pm.response.json().id);"
                 ]
               }
             }
@@ -41,15 +41,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:3001/api/v1/question-sets",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/question-sets",
               "host": [
-                "localhost"
+                "{{baseUrl}}"
               ],
-              "port": "3001",
               "path": [
-                "api",
-                "v1",
                 "question-sets"
               ]
             }
@@ -58,6 +54,17 @@
         },
         {
           "name": "2. Wrong Body (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -89,6 +96,17 @@
         },
         {
           "name": "3. Broken Body JSON (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -120,6 +138,17 @@
         },
         {
           "name": "4. No Header (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\r\n    pm.response.to.have.status(401);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -137,6 +166,17 @@
         },
         {
           "name": "5. Wrong Role - Player (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () {\r\n    pm.response.to.have.status(403);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -159,6 +199,17 @@
         },
         {
           "name": "6. List Question Sets (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -181,6 +232,17 @@
         },
         {
           "name": "7. Read One Set (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -204,6 +266,17 @@
         },
         {
           "name": "8. Set Not Found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -227,6 +300,17 @@
         },
         {
           "name": "9. ID Not Number (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -250,6 +334,17 @@
         },
         {
           "name": "10. Update Set (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
             "header": [
@@ -282,6 +377,17 @@
         },
         {
           "name": "11. Not Owner Update (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () {\r\n    pm.response.to.have.status(403);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
             "header": [
@@ -314,6 +420,17 @@
         },
         {
           "name": "12. Empty Body Update (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
             "header": [
@@ -346,6 +463,17 @@
         },
         {
           "name": "13. Delete Set (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\r\n    pm.response.to.have.status(204);\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [
@@ -874,38 +1002,43 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
     }
   ],
   "variable": [
     {
       "key": "code",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "baseUrl",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "host",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "otherHost",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "player",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "setId",
-      "value": "",
-      "type": "string"
+      "value": ""
     }
   ]
 }

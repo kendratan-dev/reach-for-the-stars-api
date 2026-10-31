@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/sessions/999999"
+method: GET
+headers:
+  X-Demo-User: "{{host}}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status is 404\", function () {\r
+
+      \    pm.response.to.have.status(404);\r
+
+      });"
+    language: text/javascript
+order: 5000

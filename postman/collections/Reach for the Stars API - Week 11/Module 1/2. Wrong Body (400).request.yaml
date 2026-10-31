@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/question-sets"
+method: POST
+headers:
+  X-Demo-User: "{{host}}"
+body:
+  type: json
+  content: "{\r\n  \"title\": \"A\"\r\n}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 400\", function () {\r
+
+      \    pm.response.to.have.status(400);\r
+
+      });"
+    language: text/javascript
+order: 2000

@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/question-sets/{{setId}}"
+method: PATCH
+headers:
+  X-Demo-User: "{{otherHost}}"
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Hacked Title\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 403\", function () {\r
+
+      \    pm.response.to.have.status(403);\r
+
+      });"
+    language: text/javascript
+order: 11000

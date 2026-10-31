@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/sessions/{{code}}/players"
+method: POST
+headers:
+  X-Demo-User: "{{otherHost}}"
+body:
+  type: json
+  content: "{\r\n  \"nickname\": \"A\"\r\n}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status is 400\", function () {\r
+
+      \    pm.response.to.have.status(400);\r
+
+      });"
+    language: text/javascript
+order: 9000
