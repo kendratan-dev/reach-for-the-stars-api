@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/question-sets"
+method: GET
+headers:
+  X-Demo-User: "{{player}}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 403\", function () {\r
+
+      \    pm.response.to.have.status(403);\r
+
+      });"
+    language: text/javascript
+order: 5000

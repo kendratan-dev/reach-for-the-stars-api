@@ -1,0 +1,9 @@
+$kind: collection
+description: ""
+variables:
+  code: ""
+  baseUrl: ""
+  host: ""
+  otherHost: ""
+  player: ""
+  setId: ""

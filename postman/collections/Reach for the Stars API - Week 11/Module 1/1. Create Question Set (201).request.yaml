@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/question-sets"
+method: POST
+headers:
+  X-Demo-User: "{{host}}"
+body:
+  type: json
+  content: '{ "title": "Philippine Literature" }'
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 201\", function () {\r
+
+      \    pm.response.to.have.status(201);\r
+
+      });\r
+
+      \r
+
+      // Save the created ID for later requests\r
+
+      pm.collectionVariables.set(\"setId\", pm.response.json().id);"
+    language: text/javascript
+order: 1000

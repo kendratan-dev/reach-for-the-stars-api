@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/sessions/{{code}}"
+method: PATCH
+headers:
+  X-Demo-User: "{{host}}"
+body:
+  type: json
+  content: "{\r\n  \"status\": \"RUNNING\"\r\n}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status is 409\", function () {\r
+
+      \    pm.response.to.have.status(409);\r
+
+      });"
+    language: text/javascript
+order: 12000

@@ -1,11 +1,14 @@
-// The single place that maps URLs to route files.
 const { Router } = require('express');
+const currentUser = require('../middlewares/current-user');
 
 const router = Router();
 
-// Hub Contract endpoints
-router.use('/health', require('./health.routes'));
-router.use('/game-info', require('./game-info.routes'));
-router.use('/results', require('./results.routes'));
+router.use(currentUser);
+
+// Mount Module 1 (Question Sets)
+router.use('/question-sets', require('./question-set.routes'));
+
+// Mount Module 2 (Sessions)
+router.use('/sessions', require('./session.routes'));
 
 module.exports = router;

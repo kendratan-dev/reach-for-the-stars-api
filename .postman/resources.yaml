@@ -1,0 +1,7 @@
+workspace:
+  id: 08884d0c-c186-44ee-8d8e-84ed73b27ecc
+cloudResources:
+  collections:
+    ../postman/collections/Reach for the Stars API - Week 11: 59247310-6f00a67b-ca1d-402d-bf07-cab263e3e0de
+  globals:
+    ../postman/globals/workspace.globals.yaml: 2c5b6753-6bc2-47f5-8846-a13237e9907d
