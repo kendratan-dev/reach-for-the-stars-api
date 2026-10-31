@@ -1,8 +1,12 @@
 const express = require('express');
+const morgan = require('morgan');
 const hubRoutes = require('./routes/hub.routes');
 const apiRoutes = require('./routes');
 
 const app = express();
+
+// Enable live HTTP request logging for all incoming requests
+app.use(morgan('dev'));
 
 app.use(express.json());
 
