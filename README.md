@@ -58,6 +58,26 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | /game-info | reach-for-the-stars, Reach for the Stars, Team 5, Kendra Shanice Tan, Reach for the Stars is a library-hosted multiplayer trivia tournament where players independently answer educational questions, earn stars, use strategic mystery-chest rewards, and compete to finish with the highest score before the round timer ends, 1-30 players, version | 200 |
 | GET | /results | Finished games, every player, and the top 3. Needs the `X-Hub-Key` header. Optional `?since=` | 200 (401 without the key) |
 
+### Module 1: Question Sets (CRUD)
+
+| Method | Path | Allowed Caller | Purpose | Success |
+|---|---|---|---|---|
+| GET | /question-sets | HOST, ADMIN | List all question sets belonging to the caller | 200 |
+| POST | /question-sets | HOST, ADMIN | Create a new question set | 201 |
+| GET | /question-sets/:id | HOST, ADMIN | Read details of a single question set | 200 |
+| PATCH | /question-sets/:id | HOST, ADMIN (Owner) | Update an existing question set's fields | 200 |
+| DELETE | /question-sets/:id | HOST, ADMIN (Owner) | Delete a question set (if unused in a game) | 204 |
+
+### Module 2: Sessions & Joining
+
+| Method | Path | Allowed Caller | Purpose | Success |
+|---|---|---|---|---|
+| POST | /sessions | HOST, ADMIN | Start a new game session and generate a 6-digit join code | 201 |
+| GET | /sessions/:code | HOST, PLAYER, ADMIN | Read current game session status and metadata | 200 |
+| PATCH | /sessions/:code | HOST, ADMIN (Owner) | Update session status (e.g., transition to `RUNNING` or `CLOSED`) | 200 |
+| POST | /sessions/:code/players | PLAYER, HOST, ADMIN | Join or rejoin a game session | 201 (Join) / 200 (Rejoin) |
+| GET | /sessions/:code/players | HOST, PLAYER, ADMIN | List joined players, nicknames, and scores for a session | 200 |
+
 ## What "completed" means in my game
 
 A player completed the game when they answered every question, even if some answers were wrong or timed out.
