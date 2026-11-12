@@ -12,7 +12,7 @@ class AppError extends Error {
 }
 
 const badRequest = (code, message, details) => new AppError(400, code, message, details);
-const unauthorized = (message = 'Say who you are first: send the X-Demo-User header.') => new AppError(401, 'AUTH_REQUIRED', message);
+const unauthorized = (message = 'Log in first: send the header Authorization: Bearer <token>.', code = 'AUTH_REQUIRED') => new AppError(401, code, message);
 const forbidden = (message = 'You are not allowed to do that.') => new AppError(403, 'FORBIDDEN', message);
 const notFound = (code, message) => new AppError(404, code, message);
 const conflict = (code, message) => new AppError(409, code, message);

@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/register"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"school_id\": \"2026-{{$randomInt}}\",\r
+
+    \  \"full_name\": \"Sneaky Admin\",\r
+
+    \  \"email\": \"admin{{$randomInt}}@test.test\",\r
+
+    \  \"password\": \"Password123\",\r
+
+    \  \"role\": \"ADMIN\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Role escalation ignored, returns PLAYER\", function () {\r
+
+      \  pm.response.to.have.status(201);\r
+
+      \  pm.expect(pm.response.json().user.role).to.eql(\"PLAYER\");\r
+
+      });"
+    language: text/javascript
+order: 3000

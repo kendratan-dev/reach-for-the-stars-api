@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/login"
+method: POST
+headers:
+  "": ""
+body:
+  type: json
+  content: "{\r
+
+    \  \"school_id\": \"2026-0001\",\r
+
+    \  \"password\": \"Pass1234!\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Login as host returns 200\", function () {\r
+
+      \  pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      const json = pm.response.json();\r
+
+      pm.collectionVariables.set(\"hostToken\", json.token);"
+    language: text/javascript
+order: 1000

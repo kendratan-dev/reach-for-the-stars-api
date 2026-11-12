@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/users/{{newUserId}}/role"
+method: PATCH
+headers:
+  Authorization: Bearer {{adminToken}}
+body:
+  type: json
+  content: "{\r\n  \"role\": \"HOST\"\r\n}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Admin promoting user returns 200\", function () {\r
+
+      \  pm.response.to.have.status(200);\r
+
+      });"
+    language: text/javascript
+order: 13000

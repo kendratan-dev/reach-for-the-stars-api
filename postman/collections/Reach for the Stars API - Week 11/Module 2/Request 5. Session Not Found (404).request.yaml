@@ -2,7 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/sessions/999999"
 method: GET
 headers:
-  X-Demo-User: "{{host}}"
+  Authorization: Bearer {{hostToken}}
 scripts:
   - type: afterResponse
     code: "pm.test(\"Status is 404\", function () {\r

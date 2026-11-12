@@ -2,7 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/question-sets"
 method: GET
 headers:
-  X-Demo-User: "{{player}}"
+  Authorization: Bearer {{playerToken}}
 scripts:
   - type: afterResponse
     code: "pm.test(\"Status code is 403\", function () {\r

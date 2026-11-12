@@ -2,7 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/question-sets/{{setId}}"
 method: PATCH
 headers:
-  X-Demo-User: "{{host}}"
+  Authorization: Bearer {{hostToken}}
 body:
   type: json
   content: "{\r

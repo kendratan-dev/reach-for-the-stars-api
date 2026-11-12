@@ -84,15 +84,15 @@ A player completed the game when they answered every question, even if some answ
 
 ## Tables
 
-1. `hosts` — Stores host/librarian account credentials and login information[cite: 5, 8, 21].
-2. `question_sets` — Stores reusable quiz collections created by hosts[cite: 5, 8, 9, 21].
-3. `questions` — Stores individual question prompts and time limits[cite: 5, 9, 21].
-4. `choices` — Stores multiple-choice options for each question[cite: 5, 10, 21].
-5. `sessions` — Represents a active or ended game room instance and main timer state[cite: 5, 10, 11, 21].
-6. `session_players` — Tracks joined players, scores, active streaks, and power-up availability[cite: 5, 11, 12, 13, 21].
-7. `answers` — Records player response submissions, answer timing, and stars earned[cite: 5, 13, 21].
-8. `chest_offers` — Stores 5-streak mystery chest reward opportunities[cite: 5, 21].
-9. `chest_slots` — Stores individual reward choices (Double Star, Protection Card, Empty) for a chest offer[cite: 5, 21].
+1. `hosts` — Stores host/librarian account credentials and login information.
+2. `question_sets` — Stores reusable quiz collections created by hosts.
+3. `questions` — Stores individual question prompts and time limits.
+4. `choices` — Stores multiple-choice options for each question.
+5. `sessions` — Represents a active or ended game room instance and main timer state.
+6. `session_players` — Tracks joined players, scores, active streaks, and power-up availability.
+7. `answers` — Records player response submissions, answer timing, and stars earned.
+8. `chest_offers` — Stores 5-streak mystery chest reward opportunities.
+9. `chest_slots` — Stores individual reward choices (Double Star, Protection Card, Empty) for a chest offer.
 
 ## Database scripts
 

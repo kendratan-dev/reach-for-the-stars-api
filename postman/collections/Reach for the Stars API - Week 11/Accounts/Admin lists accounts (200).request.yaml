@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/users"
+method: GET
+headers:
+  Authorization: Bearer {{adminToken}}
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Admin listing /users returns 200\", function () {\r
+
+      \  pm.response.to.have.status(200);\r
+
+      });"
+    language: text/javascript
+order: 12000

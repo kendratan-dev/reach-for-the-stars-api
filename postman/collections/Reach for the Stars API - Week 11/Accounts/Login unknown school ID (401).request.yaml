@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/login"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"school_id\": \"9999-9999\",\r
+
+    \  \"password\": \"Pass1234!\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Unknown ID returns 401 with identical body\", function () {\r
+
+      \  pm.response.to.have.status(401);\r
+
+      \  pm.expect(pm.response.text()).to.eql(pm.collectionVariables.get(\"wrongPassBody\"));\r
+
+      });"
+    language: text/javascript
+order: 6000

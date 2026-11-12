@@ -1,0 +1,314 @@
+# Week 15 kit: starter OpenAPI document. The Hub Contract and account endpoints are written for you.
+# Replace every CHANGE_ME, then add one entry under paths for EVERY endpoint of your game
+# (the check needs at least 15 operations, each with a summary and its responses).
+openapi: 3.0.3
+info:
+  title: CHANGE_ME Your Game API
+  version: 1.0.0
+  description: >
+    CHANGE_ME: one paragraph about your game. Implements Hub Contract v1.3. Every error answers { "error": { "code",
+    "message" } }.
+
+
+    Log in with POST /auth/login, then click Authorize and paste the token.
+  contact:
+    name: CHANGE_ME your name (your GitHub username)
+servers:
+  - url: /api/v1
+    description: This server
+tags:
+  - name: Hub Contract
+    description: The endpoints every game provides to the Library Game Hub
+  - name: Accounts
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: The token from POST /auth/login
+    hubKey:
+      type: apiKey
+      in: header
+      name: X-Hub-Key
+      description: The key the Library Game Hub sends
+  responses:
+    BadRequest:
+      description: The request is malformed (a field, the URL or the JSON itself)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: VALIDATION_FAILED
+              message: title must be 3 to 150 characters long
+              details:
+                - field: title
+                  message: title must be 3 to 150 characters long
+    Unauthorized:
+      description: No login, or the token is not valid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: AUTH_REQUIRED
+              message: "Log in first: send the header Authorization: Bearer <token>."
+    Forbidden:
+      description: Logged in, but not allowed to do this
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: FORBIDDEN
+              message: This question set belongs to another host.
+    NotFound:
+      description: That thing does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Well formed and allowed, but it clashes with the current state
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              example: VALIDATION_FAILED
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        school_id:
+          type: string
+          example: 2099-0001
+        full_name:
+          type: string
+          example: Maria Ong
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum:
+            - PLAYER
+            - HOST
+            - ADMIN
+    Meta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 23
+        pages:
+          type: integer
+          example: 3
+paths:
+  /health:
+    get:
+      tags:
+        - Hub Contract
+      summary: Is the API up, and can it reach the database?
+      responses:
+        "200":
+          description: Up
+          content:
+            application/json:
+              example:
+                status: ok
+                service: aklat-arena-api
+                version: 1.4.0
+                database: up
+                uptime_seconds: 42
+                timestamp: 2026-11-25T02:00:00.000Z
+        "503":
+          description: The database cannot be reached
+  /game-info:
+    get:
+      tags:
+        - Hub Contract
+      summary: What the Hub shows about this game
+      responses:
+        "200":
+          description: The game card
+          content:
+            application/json:
+              example:
+                slug: your-game-slug
+                name: Your Game
+                team: Your group (3-1)
+                developer: your-github-username
+                description: One sentence.
+                min_players: 2
+                max_players: 60
+                version: 1.0.0
+  /results:
+    get:
+      tags:
+        - Hub Contract
+      summary: Finished games, every player, and the podium (rule 7)
+      security:
+        - hubKey: []
+      parameters:
+        - name: since
+          in: query
+          description: Only games that ended after this date and time
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: The finished games
+          oldest first: null
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: The X-Hub-Key header is missing or wrong
+  /auth/register:
+    post:
+      tags:
+        - Accounts
+      summary: Create a PLAYER account
+      description: A role in the body is ignored. Admins promote hosts with PATCH /users/{id}/role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - school_id
+                - full_name
+                - email
+                - password
+              properties:
+                school_id:
+                  type: string
+                  pattern: ^\d{4}-\d{4}$
+                  example: 2099-3001
+                full_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: Nina Cruz
+                email:
+                  type: string
+                  format: email
+                  example: nina@aklatarena.test
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 72
+                  description: At least one letter and one number
+                  example: Libro-2026
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: SCHOOL_ID_TAKEN or EMAIL_TAKEN
+  /auth/login:
+    post:
+      tags:
+        - Accounts
+      summary: School ID and password in, a token out
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - school_id
+                - password
+              properties:
+                school_id:
+                  type: string
+                  example: 2099-0001
+                password:
+                  type: string
+                  example: Aklat-Demo-2026
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.sig
+                token_type: Bearer
+                expires_in: 1h
+                user:
+                  user_id: 1
+                  school_id: 2099-0001
+                  full_name: Maria Ong
+                  email: maria.ong@aklatarena.test
+                  role: HOST
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: INVALID_CREDENTIALS
+          the same answer for an unknown school ID and a wrong password: null
+  /auth/me:
+    get:
+      tags:
+        - Accounts
+      summary: The account of the token
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"

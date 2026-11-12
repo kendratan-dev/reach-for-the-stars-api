@@ -2,7 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/sessions/{{code}}/players"
 method: POST
 headers:
-  X-Demo-User: "{{player}}"
+  Authorization: Bearer {{playerToken}}
 body:
   type: json
   content: "{\r

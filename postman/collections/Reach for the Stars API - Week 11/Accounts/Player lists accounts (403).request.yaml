@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/users"
+method: GET
+headers:
+  Authorization: Bearer {{playerToken}}
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Player listing /users returns 403\", function () {\r
+
+      \  pm.response.to.have.status(403);\r
+
+      });"
+    language: text/javascript
+order: 11000
