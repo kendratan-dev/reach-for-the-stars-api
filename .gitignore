@@ -11,3 +11,8 @@ Thumbs.db
 
 # logs
 *.log
+
+# Weeks 12-18 kit additions
+coverage/
+uploads/*/*
+!uploads/*/.gitkeep
