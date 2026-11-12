@@ -1,12 +1,697 @@
 {
   "info": {
-    "_postman_id": "6f00a67b-ca1d-402d-bf07-cab263e3e0de",
+    "_postman_id": "c0b97713-e39a-4722-a0e1-445597b137a3",
     "name": "Reach for the Stars API - Week 11",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "59247310",
-    "_collection_link": "https://go.postman.co/collection/59247310-6f00a67b-ca1d-402d-bf07-cab263e3e0de?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/59247310-c0b97713-e39a-4722-a0e1-445597b137a3?source=collection_link"
   },
   "item": [
+    {
+      "name": "Log in (run this folder first)",
+      "item": [
+        {
+          "name": "Login as Host",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login as host returns 200\", function () {\r\n  pm.response.to.have.status(200);\r\n});\r\n\r\nconst json = pm.response.json();\r\npm.collectionVariables.set(\"hostToken\", json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "",
+                "value": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-0001\",\r\n  \"password\": \"Pass1234!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login as Player",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login as player returns 200\", function () {\r\n  pm.response.to.have.status(200);\r\n});\r\n\r\nconst json = pm.response.json();\r\npm.collectionVariables.set(\"playerToken\", json.token);\r\npm.collectionVariables.set(\"playerId\", json.user.user_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-0003\",\r\n  \"password\": \"Pass1234!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login as admin returns 200\", function () {\r\n  pm.response.to.have.status(200);\r\n});\r\n\r\nconst json = pm.response.json();\r\npm.collectionVariables.set(\"adminToken\", json.token);\r\npm.collectionVariables.set(\"adminId\", json.user.user_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-0000\",\r\n  \"password\": \"Pass1234!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login as Second Host",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login as second host returns 200\", function () {\r\n  pm.response.to.have.status(200);\r\n});\r\n\r\nconst json = pm.response.json();\r\npm.collectionVariables.set(\"otherHostToken\", json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-0002\",\r\n  \"password\": \"Pass1234!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Register valid player (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201 and password_hash is hidden\", function () {\r\n  pm.response.to.have.status(201);\r\n  const json = pm.response.json();\r\n  pm.expect(json.user.role).to.eql(\"PLAYER\");\r\n  pm.expect(json.user.password_hash).to.be.undefined;\r\n});\r\npm.collectionVariables.set(\"newUserId\", pm.response.json().user.user_id);\r\npm.collectionVariables.set(\"otherPlayerToken\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-{{$randomInt}}\",\r\n  \"full_name\": \"New Player Test\",\r\n  \"email\": \"player{{$randomInt}}@test.test\",\r\n  \"password\": \"Password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register duplicate school ID (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Duplicate school_id returns 409\", function () {\r\n  pm.response.to.have.status(409);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-0001\",\r\n  \"full_name\": \"Duplicate Host Test\",\r\n  \"email\": \"dup20260001@test.test\",\r\n  \"password\": \"Password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register asking for ADMIN comes back PLAYER (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Role escalation ignored, returns PLAYER\", function () {\r\n  pm.response.to.have.status(201);\r\n  pm.expect(pm.response.json().user.role).to.eql(\"PLAYER\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-{{$randomInt}}\",\r\n  \"full_name\": \"Sneaky Admin\",\r\n  \"email\": \"admin{{$randomInt}}@test.test\",\r\n  \"password\": \"Password123\",\r\n  \"role\": \"ADMIN\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register weak password (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Weak password returns 400\", function () {\r\n  pm.response.to.have.status(400);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-8803\",\r\n  \"full_name\": \"Weak Pass\",\r\n  \"email\": \"weak8803@test.test\",\r\n  \"password\": \"abc\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login wrong password (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Wrong password returns 401\", function () {\r\n  pm.response.to.have.status(401);\r\n});\r\npm.collectionVariables.set(\"wrongPassBody\", pm.response.text());"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"2026-0001\",\r\n  \"password\": \"WrongPassword999\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login unknown school ID (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Unknown ID returns 401 with identical body\", function () {\r\n  pm.response.to.have.status(401);\r\n  pm.expect(pm.response.text()).to.eql(pm.collectionVariables.get(\"wrongPassBody\"));\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"school_id\": \"9999-9999\",\r\n  \"password\": \"Pass1234!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get me valid token (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"GET /auth/me returns 200\", function () {\r\n  pm.response.to.have.status(200);\r\n  pm.expect(pm.response.json().user.password_hash).to.be.undefined;\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get me no token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"GET /auth/me with no token returns 401\", function () {\r\n  pm.response.to.have.status(401);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get me changed token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"GET /auth/me with changed token returns 401\", function () {\r\n  pm.response.to.have.status(401);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}tampered"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get me X-Demo-User (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"GET /auth/me with X-Demo-User returns 401\", function () {\r\n  pm.response.to.have.status(401);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-User",
+                "value": "1"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Player lists accounts (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Player listing /users returns 403\", function () {\r\n  pm.response.to.have.status(403);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin lists accounts (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Admin listing /users returns 200\", function () {\r\n  pm.response.to.have.status(200);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin promotes user (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Admin promoting user returns 200\", function () {\r\n  pm.response.to.have.status(200);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"role\": \"HOST\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{newUserId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{newUserId}}",
+                "role"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin changes own role (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Admin changing own role returns 409\", function () {\r\n  pm.response.to.have.status(409);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"role\": \"PLAYER\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{adminId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{adminId}}",
+                "role"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
     {
       "name": "Module 1",
       "item": [
@@ -27,8 +712,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -69,8 +754,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -111,8 +796,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -181,8 +866,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{player}}"
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
               }
             ],
             "url": {
@@ -214,8 +899,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -247,8 +932,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -281,8 +966,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -315,8 +1000,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -349,8 +1034,8 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -392,8 +1077,8 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{otherHost}}"
+                "key": "Authorization",
+                "value": "Bearer {{otherHostToken}}"
               }
             ],
             "body": {
@@ -435,8 +1120,8 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -478,8 +1163,8 @@
             "method": "DELETE",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -526,8 +1211,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -568,8 +1253,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{player}}"
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
               }
             ],
             "body": {
@@ -610,8 +1295,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -644,8 +1329,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -678,8 +1363,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "url": {
@@ -712,8 +1397,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{player}}"
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
               }
             ],
             "body": {
@@ -756,8 +1441,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{player}}"
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
               }
             ],
             "body": {
@@ -800,8 +1485,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{otherHost}}"
+                "key": "Authorization",
+                "value": "Bearer {{otherHostToken}}"
               }
             ],
             "body": {
@@ -844,8 +1529,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{otherHost}}"
+                "key": "Authorization",
+                "value": "Bearer {{otherHostToken}}"
               }
             ],
             "body": {
@@ -888,8 +1573,8 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -931,8 +1616,8 @@
             "method": "POST",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "2099-0004"
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
               }
             ],
             "body": {
@@ -975,8 +1660,8 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "X-Demo-User",
-                "value": "{{host}}"
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
               }
             ],
             "body": {
@@ -1002,24 +1687,9 @@
           "response": []
         }
       ]
-    },
-    {
-      "name": "New Request",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": ""
-        }
-      },
-      "response": []
     }
   ],
   "variable": [
-    {
-      "key": "code",
-      "value": ""
-    },
     {
       "key": "baseUrl",
       "value": ""
@@ -1038,6 +1708,46 @@
     },
     {
       "key": "setId",
+      "value": ""
+    },
+    {
+      "key": "hostToken",
+      "value": ""
+    },
+    {
+      "key": "playerToken",
+      "value": ""
+    },
+    {
+      "key": "playerId",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": ""
+    },
+    {
+      "key": "otherHostToken",
+      "value": ""
+    },
+    {
+      "key": "newUserId",
+      "value": ""
+    },
+    {
+      "key": "wrongPassBody",
+      "value": ""
+    },
+    {
+      "key": "otherPlayerToken",
+      "value": ""
+    },
+    {
+      "key": "code",
       "value": ""
     }
   ]

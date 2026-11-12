@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/login"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"school_id\": \"2026-0000\",\r
+
+    \  \"password\": \"Pass1234!\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Login as admin returns 200\", function () {\r
+
+      \  pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      const json = pm.response.json();\r
+
+      pm.collectionVariables.set(\"adminToken\", json.token);\r
+
+      pm.collectionVariables.set(\"adminId\", json.user.user_id);"
+    language: text/javascript
+order: 3000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/me"
+method: GET
+headers:
+  Authorization: Bearer {{playerToken}}tampered
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"GET /auth/me with changed token returns 401\", function () {\r
+
+      \  pm.response.to.have.status(401);\r
+
+      });"
+    language: text/javascript
+order: 9000

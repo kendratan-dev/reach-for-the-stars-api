@@ -1,19 +1,21 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const tokenHelper = require('../security/token');
+const userRepository = require('../repositories/user.repository');
 const env = require('../config/env');
 const AppError = require('../utils/app-error');
 
+const DUMMY_HASH = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+
 async function register(data) {
   const { password, ...rest } = data;
-  
-  // Hash the password
+
   const salt = await bcrypt.genSalt(10);
   const password_hash = await bcrypt.hash(password, salt);
 
-  // Create the user with the hashed password
-  const user = await User.create({
+  const user = await userRepository.create({
     ...rest,
+    username: rest.username || rest.school_id,
+    role: 'PLAYER',
     password_hash,
   });
 
@@ -21,27 +23,20 @@ async function register(data) {
 }
 
 async function login(school_id, password) {
-  // Find user by school_id
-  const user = await User.findOne({ where: { school_id } });
-  if (!user || !user.password_hash) {
+  const user = await userRepository.findForLogin(school_id);
+  const hashToCompare = user && user.password_hash ? user.password_hash : DUMMY_HASH;
+
+  const isMatch = await bcrypt.compare(password, hashToCompare);
+  if (!user || !user.password_hash || !isMatch) {
     throw new AppError('Invalid school ID or password', 401, 'INVALID_CREDENTIALS');
   }
 
-  // Compare passwords
-  const isMatch = await bcrypt.compare(password, user.password_hash);
-  if (!isMatch) {
-    throw new AppError('Invalid school ID or password', 401, 'INVALID_CREDENTIALS');
-  }
-
-  // Generate JWT token
-  const token = jwt.sign(
-    { user_id: user.user_id, role: user.role },
-    env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN || '1h' }
-  );
+  const token = tokenHelper.issue(user);
 
   return {
     token,
+    token_type: 'Bearer',
+    expires_in: env.jwt.expiresIn,
     user: toJson(user),
   };
 }

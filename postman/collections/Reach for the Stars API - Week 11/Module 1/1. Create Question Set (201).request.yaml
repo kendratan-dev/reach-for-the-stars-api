@@ -2,7 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/question-sets"
 method: POST
 headers:
-  X-Demo-User: "{{host}}"
+  Authorization: Bearer {{hostToken}}
 body:
   type: json
   content: '{ "title": "Philippine Literature" }'

@@ -3,11 +3,11 @@ const currentUser = require('../middlewares/current-user');
 
 const router = Router();
 
-// Public authentication routes (login, register)
-router.use('/auth', require('./auth.routes'));
-
-// From here on, req.user is set via JWT token verification
+// Parse Bearer token on all routes (sets req.user = null if no header)
 router.use(currentUser);
+
+// Auth routes (/register and /login are public; /me uses requireUser())
+router.use('/auth', require('./auth.routes'));
 
 // Admin user management routes
 router.use('/users', require('./user.routes'));

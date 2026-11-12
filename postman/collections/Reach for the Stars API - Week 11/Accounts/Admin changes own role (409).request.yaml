@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/users/{{adminId}}/role"
+method: PATCH
+headers:
+  Authorization: Bearer {{adminToken}}
+body:
+  type: json
+  content: "{\r\n  \"role\": \"PLAYER\"\r\n}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Admin changing own role returns 409\", function () {\r
+
+      \  pm.response.to.have.status(409);\r
+
+      });"
+    language: text/javascript
+order: 14000

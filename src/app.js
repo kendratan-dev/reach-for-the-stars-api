@@ -26,4 +26,26 @@ app.use((req, res) => {
   });
 });
 
+// Global JSON error handler
+app.use((err, req, res, next) => {
+  // Handle duplicate school_id or email from Sequelize
+  if (err.name === 'SequelizeUniqueConstraintError') {
+    const field = err.errors?.[0]?.path || 'field';
+    return res.status(409).json({
+      error: {
+        code: `DUPLICATE_${field.toUpperCase()}`,
+        message: `${field} is already taken`
+      }
+    });
+  }
+
+  const status = err.statusCode || err.status || 500;
+  const code = err.code || 'INTERNAL_ERROR';
+  const message = err.message || 'Something went wrong';
+
+  res.status(status).json({
+    error: { code, message }
+  });
+});
+
 module.exports = app;

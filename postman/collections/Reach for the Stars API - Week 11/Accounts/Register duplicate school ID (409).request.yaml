@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/register"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"school_id\": \"2026-0001\",\r
+
+    \  \"full_name\": \"Duplicate Host Test\",\r
+
+    \  \"email\": \"dup20260001@test.test\",\r
+
+    \  \"password\": \"Password123\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Duplicate school_id returns 409\", function () {\r
+
+      \  pm.response.to.have.status(409);\r
+
+      });"
+    language: text/javascript
+order: 2000

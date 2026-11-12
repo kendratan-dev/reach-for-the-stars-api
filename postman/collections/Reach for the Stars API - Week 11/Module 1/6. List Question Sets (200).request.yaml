@@ -2,7 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/question-sets"
 method: GET
 headers:
-  X-Demo-User: "{{host}}"
+  Authorization: Bearer {{hostToken}}
 scripts:
   - type: afterResponse
     code: "pm.test(\"Status code is 200\", function () {\r

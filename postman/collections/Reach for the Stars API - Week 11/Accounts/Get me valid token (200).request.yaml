@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/me"
+method: GET
+headers:
+  Authorization: Bearer {{playerToken}}
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"GET /auth/me returns 200\", function () {\r
+
+      \  pm.response.to.have.status(200);\r
+
+      \  pm.expect(pm.response.json().user.password_hash).to.be.undefined;\r
+
+      });"
+    language: text/javascript
+order: 7000
