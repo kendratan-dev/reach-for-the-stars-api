@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { User } = require('../models');
-const { requireUser } = require('../middlewares/require-user');
+const requireUser = require('../middlewares/require-user');
 const validate = require('../middlewares/validate');
 const { body, param } = require('express-validator');
 const { conflict, notFound } = require('../errors/app-error');
