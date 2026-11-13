@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Reach for the Stars is a library-hosted multiplayer trivia tournament where players independently answer educational questions, earn stars, use strategic mystery-chest rewards, and compete to finish with the highest score before the round timer ends. (CS 313 Software Engineering 1)",
   "main": "src/server.js",
-  "scripts": {
+"scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:create": "sequelize-cli db:create",
@@ -15,9 +15,11 @@
     "db:reset": "node scripts/db-wipe.js && sequelize-cli db:migrate && sequelize-cli db:seed:all",
     "db:check": "node scripts/db-check.js",
     "check": "node scripts/ci-check.js",
-    "start:render": "npx sequelize-cli db:migrate && node scripts/create-admin.js && node src/server.js"    "test": "jest --runInBand",
+    "start:render": "npx sequelize-cli db:migrate && node scripts/create-admin.js && node src/server.js",
+    "test": "jest --runInBand",
     "test:coverage": "jest --runInBand --coverage"
   },
+  
   "engines": {
     "node": ">=22"
   },
