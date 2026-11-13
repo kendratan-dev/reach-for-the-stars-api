@@ -1,77 +1,82 @@
 const questionRepository = require('../repositories/question.repository');
 const questionSetRepository = require('../repositories/question-set.repository');
-const { appError, forbidden, notFound } = require('../errors/app-error');
+const { forbidden, notFound, conflict } = require('../errors/app-error');
 
-// Helper to safely invoke error helper regardless of export style
-function throwForbidden(msg) {
-  if (forbidden) throw forbidden(msg);
-  if (appError && appError.forbidden) throw appError.forbidden(msg);
-  const err = new Error(msg);
-  err.status = 403;
-  throw err;
-}
+async function assertCanEditSet(setId, user) {
+  const set = await questionSetRepository.findById(setId);
+  if (!set) {
+    throw notFound('QUESTION_SET_NOT_FOUND', `No question set has the id ${setId}.`);
+  }
 
-function throwNotFound(msg) {
-  if (notFound) throw notFound(msg);
-  if (appError && appError.notFound) throw appError.notFound(msg);
-  const err = new Error(msg);
-  err.status = 404;
-  throw err;
+  const userId = user.host_id || user.user_id || user.id;
+  if (Number(set.host_id) !== Number(userId) && user.role !== 'ADMIN') {
+    throw forbidden('You are not allowed to modify another host\'s question set.');
+  }
+
+  const inUse = await questionSetRepository.isUsedInSession(setId);
+  if (inUse) {
+    throw conflict('SET_IN_USE', 'This question set has already been used in a game and cannot be edited.');
+  }
+
+  return set;
 }
 
 async function listBySetId(setId, user) {
   const set = await questionSetRepository.findById(setId);
   if (!set) {
-    throwNotFound('Question set not found.');
+    throw notFound('QUESTION_SET_NOT_FOUND', `No question set has the id ${setId}.`);
   }
 
-  const userId = user.id || user.user_id;
-  if (set.host_id !== userId && user.role !== 'ADMIN') {
-    throwForbidden('You do not have permission to access these questions.');
+  const userId = user.host_id || user.user_id || user.id;
+  if (Number(set.host_id) !== Number(userId) && user.role !== 'ADMIN') {
+    throw forbidden('You are not allowed to view questions in another host\'s set.');
   }
 
   return questionRepository.findAllBySetId(setId);
 }
 
 async function createQuestion(setId, data, user) {
-  const set = await questionSetRepository.findById(setId);
-  if (!set) {
-    throwNotFound('Question set not found.');
-  }
-
-  const userId = user.id || user.user_id;
-  if (set.host_id !== userId && user.role !== 'ADMIN') {
-    throwForbidden('You do not have permission to modify this set.');
-  }
+  await assertCanEditSet(setId, user);
 
   const questionData = {
-    question_set_id: setId,
-    position: data.position || 1,
-    text: data.text,
+    text: data.text.trim(),
     type: data.type || 'MULTIPLE_CHOICE',
     time_limit_sec: data.time_limit_sec || 30,
   };
 
-  return questionRepository.createWithChoices(questionData, data.choices || []);
+  return questionRepository.createWithChoices(setId, questionData, data.choices);
 }
 
-async function removeQuestion(questionId, user) {
-  const question = await questionRepository.findById(questionId);
+async function updateQuestion(setId, questionId, data, user) {
+  await assertCanEditSet(setId, user);
+
+  const question = await questionRepository.findByIdAndSet(questionId, setId);
   if (!question) {
-    throwNotFound('Question not found.');
+    throw notFound('QUESTION_NOT_FOUND', `No question ${questionId} found in question set ${setId}.`);
   }
 
-  const set = await questionSetRepository.findById(question.question_set_id);
-  const userId = user.id || user.user_id;
-  if (set && set.host_id !== userId && user.role !== 'ADMIN') {
-    throwForbidden('You do not have permission to delete this question.');
+  const changes = {};
+  if (data.text !== undefined) changes.text = data.text.trim();
+  if (data.type !== undefined) changes.type = data.type;
+  if (data.time_limit_sec !== undefined) changes.time_limit_sec = data.time_limit_sec;
+
+  return questionRepository.updateWithChoices(question, changes, data.choices);
+}
+
+async function removeQuestion(setId, questionId, user) {
+  await assertCanEditSet(setId, user);
+
+  const question = await questionRepository.findByIdAndSet(questionId, setId);
+  if (!question) {
+    throw notFound('QUESTION_NOT_FOUND', `No question ${questionId} found in question set ${setId}.`);
   }
 
-  return questionRepository.deleteById(questionId);
+  await questionRepository.deleteById(question);
 }
 
 module.exports = {
   listBySetId,
   createQuestion,
+  updateQuestion,
   removeQuestion,
 };

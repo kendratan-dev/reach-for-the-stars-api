@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) =>
       description: { type: DataTypes.TEXT },
       subject: { type: DataTypes.STRING(100) },
       grade_level: { type: DataTypes.STRING(50) },
+      cover_url: { type: DataTypes.STRING(255), allowNull: true },
     },
     { tableName: 'question_sets', timestamps: true, createdAt: 'created_at', updatedAt: false }
   );
