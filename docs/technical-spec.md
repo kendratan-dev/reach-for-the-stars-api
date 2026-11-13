@@ -1,4 +1,4 @@
-# Technical specification: [Your Game Title] API
+﻿# Technical specification: [Your Game Title] API
 
 Version [x.y.z], SE1 final build. Developer: [Your full name] ([your GitHub username]), BSCS [3-1 or 3-2]. Group: [Group name].
 
@@ -56,3 +56,4 @@ Version [x.y.z], SE1 final build. Developer: [Your full name] ([your GitHub user
 | [Your decision] | [Your reason] | [Your alternative] |
 | [Your decision] | [Your reason] | [Your alternative] |
 | [Your decision] | [Your reason] | [Your alternative] |
+

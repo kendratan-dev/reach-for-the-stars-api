@@ -1,4 +1,4 @@
-# SE2 handoff: building the [Your Game Title] frontend
+﻿# SE2 handoff: building the [Your Game Title] frontend
 
 ## Connection
 
@@ -24,3 +24,4 @@
 1. [Your limit or backlog item]
 2. [Your limit or backlog item]
 3. [Your limit or backlog item]
+

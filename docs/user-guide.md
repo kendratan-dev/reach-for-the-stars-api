@@ -1,4 +1,4 @@
-# User guide: [Your Game Title] API
+﻿# User guide: [Your Game Title] API
 
 How each kind of user works with the API. Base URL: [your live address]/api/v1. Every endpoint can be tried in Swagger UI at `/docs/`.
 
@@ -29,3 +29,4 @@ How each kind of user works with the API. Base URL: [your live address]/api/v1. 
 ## When something goes wrong
 
 [Your description: the error format, and the codes a user of your game is most likely to meet.]
+
