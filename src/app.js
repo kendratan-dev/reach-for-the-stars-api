@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const hubRoutes = require('./routes/hub.routes');
@@ -5,10 +6,11 @@ const apiRoutes = require('./routes');
 
 const app = express();
 
-// Enable live HTTP request logging for all incoming requests
 app.use(morgan('dev'));
-
 app.use(express.json());
+
+// Serve uploaded cover images statically
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Mount hub routes under /api/v1 (matches BASE URL in ci-check.js)
 app.use('/api/v1', hubRoutes);

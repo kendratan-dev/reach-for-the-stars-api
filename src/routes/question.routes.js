@@ -1,10 +1,14 @@
-const express = require('express');
-const router = express.Router({ mergeParams: true });
-const questionController = require('../controllers/question.controller');
+const { Router } = require('express');
+const controller = require('../controllers/question.controller');
+const rules = require('../validators/question.validator');
+const validate = require('../middlewares/validate');
 
-// Routes mounted at /api/v1/question-sets/:setId/questions
-router.get('/', questionController.listBySet);
-router.post('/', questionController.create);
-router.delete('/:id', questionController.remove);
+const router = Router({ mergeParams: true });
+
+// Mounted at /api/v1/question-sets/:id/questions
+router.get('/', rules.setIdParam, validate, controller.listBySet);
+router.post('/', rules.createQuestionRules, validate, controller.create);
+router.patch('/:questionId', rules.updateQuestionRules, validate, controller.update);
+router.delete('/:questionId', rules.setIdParam, rules.questionIdParam, validate, controller.remove);
 
 module.exports = router;

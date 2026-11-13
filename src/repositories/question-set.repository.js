@@ -1,32 +1,47 @@
-const { QuestionSet, Question, Choice } = require('../models');
+const { Op } = require('sequelize');
+const { QuestionSet, Question, Choice, Session } = require('../models');
+const { toOffset } = require('../utils/paginate');
 
-function findAll() {
-  return QuestionSet.findAll({ order: [['id', 'ASC']] });
+function findAndCount({ hostId, page = 1, limit = 10, sort = 'id', order = 'asc', q }) {
+  const where = {};
+  if (hostId) {
+    where.host_id = hostId;
+  }
+  if (q) {
+    where[Op.or] = [
+      { title: { [Op.iLike]: `%${q}%` } },
+      { subject: { [Op.iLike]: `%${q}%` } },
+    ];
+  }
+
+  return QuestionSet.findAndCountAll({
+    where,
+    order: [[sort, order.toUpperCase()]],
+    ...toOffset({ page, limit }),
+  });
 }
 
-function findAllByHost(hostId) {
-  return QuestionSet.findAll({ where: { host_id: hostId }, order: [['id', 'ASC']] });
-}
-
-function findById(id) {
-  return QuestionSet.findByPk(id, {
-    include: [
+function findById(id, { includeQuestions = false } = {}) {
+  const options = {};
+  if (includeQuestions) {
+    options.include = [
       {
         model: Question,
         as: 'questions',
-        include: [
-          {
-            model: Choice,
-            as: 'choices',
-          },
-        ],
+        include: [{ model: Choice, as: 'choices' }],
       },
-    ],
-    order: [
+    ];
+    options.order = [
       [{ model: Question, as: 'questions' }, 'position', 'ASC'],
       [{ model: Question, as: 'questions' }, { model: Choice, as: 'choices' }, 'choice_index', 'ASC'],
-    ],
-  });
+    ];
+  }
+  return QuestionSet.findByPk(id, options);
+}
+
+async function isUsedInSession(questionSetId) {
+  const count = await Session.count({ where: { question_set_id: questionSetId } });
+  return count > 0;
 }
 
 function create(data) {
@@ -41,4 +56,4 @@ function remove(questionSet) {
   return questionSet.destroy();
 }
 
-module.exports = { findAll, findAllByHost, findById, create, update, remove };
+module.exports = { findAndCount, findById, isUsedInSession, create, update, remove };

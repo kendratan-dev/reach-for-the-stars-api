@@ -1687,6 +1687,572 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Question bank",
+      "item": [
+        {
+          "name": "Create fresh question set for M2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Create set returns 201\", () => pm.response.to.have.status(201));\nconst json = pm.response.json();\npm.collectionVariables.set(\"m2SetId\", json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Week 13 Astronomy Bank\",\n  \"subject\": \"Science\",\n  \"description\": \"M2 test set\",\n  \"grade_level\": \"Grade 8\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List question sets with pagination (page 1, limit 2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Paginated list returns 200 with envelope\", () => {\n  pm.response.to.have.status(200);\n  const json = pm.response.json();\n  pm.expect(json.data).to.be.an(\"array\");\n  pm.expect(json.meta).to.include.all.keys(\"page\", \"limit\", \"total\", \"pages\");\n  pm.expect(json.meta.page).to.eql(1);\n  pm.expect(json.meta.limit).to.eql(2);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets?page=1&limit=2&sort=title&order=asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "2"
+                },
+                {
+                  "key": "sort",
+                  "value": "title"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search question sets with empty result (?q=no_such_match_xyz)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Empty search returns 200 with empty data array\", () => {\n  pm.response.to.have.status(200);\n  const json = pm.response.json();\n  pm.expect(json.data).to.be.an(\"array\").that.is.empty;\n  pm.expect(json.meta.total).to.eql(0);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets?q=no_such_match_xyz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "no_such_match_xyz"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bad sort column returns 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Disallowed sort column returns 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets?sort=password_hash",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "password_hash"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add question with choices (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Create question returns 201 with choices\", () => {\n  pm.response.to.have.status(201);\n  const json = pm.response.json();\n  pm.expect(json.position).to.eql(1);\n  pm.expect(json.choices).to.have.lengthOf(3);\n  pm.collectionVariables.set(\"m2QuestionId\", json.id);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Which planet is closest to the Sun?\",\n  \"type\": \"MULTIPLE_CHOICE\",\n  \"time_limit_sec\": 20,\n  \"choices\": [\n    {\n      \"text\": \"Mercury\",\n      \"is_correct\": true\n    },\n    {\n      \"text\": \"Venus\",\n      \"is_correct\": false\n    },\n    {\n      \"text\": \"Mars\",\n      \"is_correct\": false\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}",
+                "questions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Two correct choices rejected with 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Two correct choices returns 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Invalid question with two correct answers\",\n  \"choices\": [\n    {\n      \"text\": \"Option A\",\n      \"is_correct\": true\n    },\n    {\n      \"text\": \"Option B\",\n      \"is_correct\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}",
+                "questions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Player adding a question rejected with 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Player role gets 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Unauthorized player question\",\n  \"choices\": [\n    {\n      \"text\": \"A\",\n      \"is_correct\": true\n    },\n    {\n      \"text\": \"B\",\n      \"is_correct\": false\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}",
+                "questions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read question set with ?include=questions (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get set with include=questions returns nested questions and choices\", () => {\n  pm.response.to.have.status(200);\n  const json = pm.response.json();\n  pm.expect(json.questions).to.be.an(\"array\").with.lengthOf(1);\n  pm.expect(json.questions[0].choices).to.have.lengthOf(3);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}?include=questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}"
+              ],
+              "query": [
+                {
+                  "key": "include",
+                  "value": "questions"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update question in fresh set (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Patch question returns 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"time_limit_sec\": 25\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}/questions/{{m2QuestionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}",
+                "questions",
+                "{{m2QuestionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit a question set already in use by a game returns 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Editing a set used in a session returns 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Attempt to edit frozen set 1\",\n  \"choices\": [\n    {\n      \"text\": \"Yes\",\n      \"is_correct\": true\n    },\n    {\n      \"text\": \"No\",\n      \"is_correct\": false\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/1/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "1",
+                "questions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload valid PNG cover image (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Valid PNG cover upload returns 200 with cover_url\", () => {\n  pm.response.to.have.status(200);\n  const json = pm.response.json();\n  pm.expect(json.cover_url).to.match(/^\\/uploads\\/covers\\//);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/cover.png"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}",
+                "cover"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload wrong file type (.txt) returns 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Wrong file type returns 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/not-a-picture.txt"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}",
+                "cover"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload oversized file (> 1 MB) returns 413",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Oversized cover returns 413\", () => pm.response.to.have.status(413));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/too-big.png"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{m2SetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{m2SetId}}",
+                "cover"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
