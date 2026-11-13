@@ -78,6 +78,25 @@ Base URL: `http://localhost:3001/api/v1`
 | POST | /sessions/:code/players | PLAYER, HOST, ADMIN | Join or rejoin a game session | 201 (Join) / 200 (Rejoin) |
 | GET | /sessions/:code/players | HOST, PLAYER, ADMIN | List joined players, nicknames, and scores for a session | 200 |
 
+### Module 3: Gameplay & Leaderboard
+
+| Method | Path | Allowed Caller | Purpose | Success |
+|---|---|---|---|---|
+| GET | /sessions/:code/question | PLAYER, HOST, ADMIN | Fetch the active question and choices without exposing `is_correct` | 200 |
+| POST | /sessions/:code/answers | Seated PLAYER, HOST, ADMIN | Submit a single answer for the active question; server computes elapsed time and score | 201 |
+| GET | /sessions/:code/leaderboard | HOST, PLAYER, ADMIN | View ranked players (`?limit=10`) with competition tie ranking (`1, 2, 2, 4`) | 200 |
+
+## Scoring formula
+
+Server-authoritative scoring implemented in `src/services/scoring.js` (`pointsFor(question, isCorrect, elapsedMs)`):
+
+```
+points = round(base * (1 - elapsed / (2 * limit)))
+```
+
+- Incorrect answers or answers submitted after `time_limit_sec` receive `0` points.
+- Example: `base = 1000`, `limit = 20s`, answered correctly at `10s` -> `round(1000 * (1 - 10 / 40)) = 750` points.
+
 ## What "completed" means in my game
 
 A player completed the game when they answered every question, even if some answers were wrong or timed out.

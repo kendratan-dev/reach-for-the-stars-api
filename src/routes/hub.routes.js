@@ -53,7 +53,7 @@ router.get('/results', async (req, res) => {
     }
   }
 
-  const whereClause = { status: 'ENDED' };
+  const whereClause = { status: { [Op.in]: ['ENDED', 'CLOSED'] } };
   if (sinceDate) {
     whereClause.ended_at = { [Op.gt]: sinceDate };
   }
@@ -79,7 +79,7 @@ router.get('/results', async (req, res) => {
           school_id: p.User?.school_id || p.school_id || '2026-0001',
           nickname: p.nickname || 'Player',
           score: Number(p.stars ?? p.score ?? 0),
-          completed: p.completed ?? true
+          completed: Number(p.answer_count ?? 0) > 0 || Boolean(p.completed)
         }));
 
         // Sort by score descending to generate top 3 podium ranks
