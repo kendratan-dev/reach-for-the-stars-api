@@ -1,10 +1,13 @@
-const { Router } = require('express');
+﻿const { Router } = require('express');
 const currentUser = require('../middlewares/current-user');
 
 const router = Router();
 
 // Parse Bearer token on all routes (sets req.user = null if no header)
 router.use(currentUser);
+
+// Mount API Documentation & OpenAPI JSON (/docs and /openapi.json)
+router.use('/', require('./docs.routes'));
 
 // Auth routes (/register and /login are public; /me uses requireUser())
 router.use('/auth', require('./auth.routes'));
