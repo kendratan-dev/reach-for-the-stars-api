@@ -1,60 +1,51 @@
 ﻿# Development journey: [Reach for the Stars] API
 
-Student: [Kendra Shanice R. Tan] Â· Section: [3-1] Â· Group: [5]
+Student: [Kendra Shanice R. Tan] · Section: [3-1] · Group: [5]
 
 One entry per milestone, written the week you did it. Newest at the bottom.
 
-## M1 Â· Accounts, passwords and tokens
-- Dates worked: Nov 12â€“13, 2026 Â· Time spent: 3 hours
+## M1 · Accounts, passwords and tokens
+- Dates worked: Nov 12–13, 2026 · Time spent: 3 hours
 - Goal: Implement full JWT-based user authentication, bcrypt password hashing, role-based admin account management, and an automated 43-request Postman test suite.
 - What I built: Created the `add-password-to-users` migration and `demo-passwords` seeder (`db/seeders/20261112130223-demo-passwords.js`), implemented `POST /auth/register`, `POST /auth/login`, and `GET /auth/me` with `toJson(user)` hash stripping, added admin user management routes (`GET /users` and `PATCH /users/:id/role`), replaced `X-Demo-User` headers with Bearer JWT verification in `requireUser`, updated `.env.example`, and built a 43-request Postman collection (`postman/Reach_for_the_Stars_API.postman_collection.json`) covering login, registration, token errors, and role promotion.
-- Evidence: PR (feature/auth -> main) Â· Commits: `668b048`, `7b9df42`, `79b5562`, `3f84cad` , `17c4247` Â· `npm run check` passing all H and I fresh-database checks (43 requests, 43 tests, 0 failed).
+- Evidence: PR (feature/auth -> main) · Commits: `668b048`, `7b9df42`, `79b5562`, `3f84cad` , `17c4247` · `npm run check` passing all H and I fresh-database checks (43 requests, 43 tests, 0 failed).
 - Problem I hit: Hit a `password_hash` column conflict during migration, and later ran into `409 DUPLICATE_SCHOOL_ID` / fresh-database test mismatches in Postman when static test IDs either collided across repeated runs or didn't exist on a newly reset database.
 - How I solved it: Reset the database cleanly to resync migration history, used `{{$randomInt}}` for new user registration tests so repeated runs never collide, and pointed the duplicate-ID `409` test at seeded account `2026-0001` so it passes reliably after `npm run db:reset`.
 - Decision I made and why: Used a 64-character cryptographically secure random string for `JWT_SECRET` and verified login passwords against a dummy hash when a `school_id` is unknown so both invalid-password and unknown-ID `401` responses behave identically and resist timing/enumeration attacks.
 - Changes to my design set: Added the `password_hash` column to the `users` table schema, stripped `password_hash` from all serialized user responses, and enforced self-demotion protection (`409`) on `PATCH /users/:id/role`.
 - What I would explain to a classmate: How bcrypt hashes passwords with a salt so plaintext passwords are never stored, how JWT Bearer tokens replace insecure `X-Demo-User` headers, and why Postman test suites need dynamic values (`{{$randomInt}}`) alongside seeded IDs to pass on a fresh `npm run db:reset` database.
 
-## M2 Â· The question bank
-- Dates worked: Nov 13, 2026 Â· Time spent: 1 hour
+## M2 · The question bank
+- Dates worked: Nov 13, 2026 · Time spent: 1 hour
 - Goal: Implement paginated, searchable, and allow-listed sortable question set lists, transactional nested CRUD for questions and choices, frozen-set edit protection (`409`), safe UUID-renamed cover image uploads, and an expanded 56-request Postman test suite.
 - What I built: Updated `GET /question-sets` with `pageRules`, allow-listed `sortRules`, `Op.iLike` search (`?q=`), and `{ data, meta }` envelope pagination; added `?include=questions` eager loading on `GET /question-sets/:id`; built nested `GET`/`POST /question-sets/:id/questions` and `PATCH`/`DELETE /question-sets/:id/questions/:questionId` endpoints inside `sequelize.transaction` blocks with server-assigned positions, single-correct-choice validation (`400`), owner-only checks (`403`), and frozen-set checks (`409 SET_IN_USE`); created the `add-cover-url-to-question-sets` migration and `PUT /question-sets/:id/cover` endpoint using `multer` (`uploads/covers`) with static serving in `app.js`; and added the 13-request "Question bank" folder to `postman/Reach for the Stars API - Week 11.postman_collection.json`.
-- Evidence: PR (`feature/question-bank` -> `main`) Â· Commits: `d942e9d` Â· `npm run check` passing all C and I fresh-database checks (56 requests, 56 tests, 0 failed).
+- Evidence: PR (`feature/question-bank` -> `main`) · Commits: `d942e9d` · `npm run check` passing all C and I fresh-database checks (56 requests, 56 tests, 0 failed).
 - Problem I hit: PowerShell stripped double quotes inside inline `node -e` scripts and resolved `.NET` `WriteAllBytes` relative paths against the home directory rather than the repository root when generating the oversized `too-big.png` test fixture and updating the Postman JSON.
 - How I solved it: Used `$PWD` for explicit file paths and switched to a PowerShell single-quoted here-string (`@' ... '@ | node`) so the Postman collection JSON updated cleanly without shell quote-stripping, allowing Newman to run all 56 requests (including multipart file uploads) reliably on a fresh database.
 - Decision I made and why: Allow-listed sortable columns (`['id', 'title', 'subject', 'created_at']`) to prevent SQL injection through `ORDER BY`, wrapped question and choice writes in `sequelize.transaction` so partial records are never saved, and renamed uploaded cover images with `crypto.randomUUID()` while capping size at 1 MB (`413`) and restricting MIME types to PNG/JPEG (`400`) to prevent path traversal and filename collisions.
 - Changes to my design set: Added a nullable `cover_url` column to the `question_sets` table schema, standardized `GET /question-sets` responses from a raw array to the `{ data, meta }` pagination envelope, and enforced `409 SET_IN_USE` immutability on question sets already referenced by a game session.
 - What I would explain to a classmate: Why `ORDER BY` column names must be allow-listed rather than parameterized, how Sequelize `include` prevents N+1 query loops when loading sets with questions and choices, how database transactions keep parent-child inserts atomic, and why file uploads must be server-renamed and validated by MIME type and byte size.
 
-## M3 Â· Gameplay
-- Dates worked: Nov 13, 2026 Â· Time spent: 1 hour
+## M3 · Gameplay
+- Dates worked: Nov 13, 2026 · Time spent: 1 hour
 - Goal: Implement server-timed live gameplay, atomic transactional scoring with pure `pointsFor()`, competition-ranked leaderboards, and a 21-request end-to-end "Play a whole game" Postman folder.
 - What I built: Created the `add-gameplay-columns` migration adding `current_position` and `question_started_at` to `sessions` and `UNIQUE (player_id, question_id)` (`uq_answer_player_question`) to `answers`; built pure `pointsFor(question, isCorrect, elapsedMs)` in `src/services/scoring.js`; updated `PATCH /sessions/:code` to initialize `current_position = 1` and `question_started_at = now` on `RUNNING` and enforce sequential progression (`409 NOT_NEXT_QUESTION` / `409 NO_MORE_QUESTIONS`); added `GET /sessions/:code/question` (stripping `is_correct`), `POST /sessions/:code/answers` (ordered checks: `409` running, `403` seated, `409` current question, `400` valid choice, transactional insert + `player.increment()`), and `GET /sessions/:code/leaderboard?limit=10` with `1, 2, 2, 4` tie ranking; updated `GET /results` to include `CLOSED` sessions; and added the "Play a whole game" folder bringing the collection to 77 passing requests.
-- Evidence: PR (`feature/gameplay` -> `main`) Â· Commits: `1e4813a` Â· `npm run check` passing all I (77 requests, 77 tests, 0 failed) and J (live game completed and listed in `/results`) checks.
+- Evidence: PR (`feature/gameplay` -> `main`) · Commits: `1e4813a` · `npm run check` passing all I (77 requests, 77 tests, 0 failed) and J (live game completed and listed in `/results`) checks.
 - Problem I hit: In the multiplayer Postman flow, registering a second player initially hit `400` due to missing registration fields (`username`, `full_name`, `email`) and needed a separate `POST /auth/login` step to obtain `otherPlayerToken`.
 - How I solved it: Added a pre-request script generating a random 4-digit `school_id` suffix (`2026-XXXX`) followed by an explicit login step so both players join, answer every question, and appear on the final leaderboard and `/results`.
 - Decision I made and why: Kept `pointsFor()` pure with zero database or clock side effects so M4 unit tests can verify exact boundary cases directly, and used `player.increment()` inside `sequelize.transaction` alongside a DB-level `UNIQUE (player_id, question_id)` constraint so concurrent requests never lose points or double-score.
 - Changes to my design set (Week 7 endpoint table review): All Week 7 core endpoints (`/health`, `/game-info`, `/results`, `/auth/*`, `/users/*`, `/question-sets/*`, `/sessions/*`, `/sessions/:code/players`, `/sessions/:code/question`, `/sessions/:code/answers`, `/sessions/:code/leaderboard`) are now implemented. Simplified `PATCH /sessions/:code` to accept `{ current_position }` alongside `{ status }` rather than a separate `/next` route, and defined player completion as `answer_count > 0` in `/results`.
 - What I would explain to a classmate: Why clients never send timestamps or point totals when submitting answers, how `player.increment()` inside a transaction prevents lost-update race conditions, and how competition tie ranking (`1, 2, 2, 4`) works.
 
-## M4 Â· Automated tests and server preparation
-
-# 1. Update development-journey.md with M4 (Get-Content "docs\development-journey.md" -Raw) -replace "## M4 Â· Automated tests and server preparation
-- Dates worked: Nov 13, 2026 Â· Time spent: 1.5 hours
+## M4 · Automated tests and server preparation
+- Dates worked: Nov 13, 2026 · Time spent: 1.5 hours
 - Goal: Implement automated Jest unit and Supertest HTTP integration test suites meeting Section K coverage requirements, configure production security (CORS, Helmet, Render start script), and achieve 100% passing automated checks.
-- What I built: Configured Jest and Supertest with a dedicated _test database global setup (	ests/setup/global-setup.js), a clean fter-env.js teardown hook, and isolated helpers (	ests/setup/helpers.js); wrote unit tests for pure scoring (scoring.service.test.js), authentication (uth.service.test.js), session answer validation (session.service.test.js), and question edit guards (question.service.test.js); wrote Supertest integration test suites covering hub, CORS enforcement, auth workflows, question bank management, and end-to-end game session lifecycles; achieved 68.33% line coverage across all modules; and finalized Render deployment preparation with strict CORS allow-listing, security headers via Helmet, and a production admin bootstrap script.
-- Evidence: PR (eature/tests -> main) Â· Commits: 5b07f8f, 8cb3600, 49af041, 3cdd77c Â· 
-pm run check passing all K and L checks (30 tests in 10 files, 68.33% line coverage, CORS allowed/refused checks passing).
+- What I built: Configured Jest and Supertest with a dedicated `_test` database global setup (`tests/setup/global-setup.js`), a clean `after-env.js` teardown hook, and isolated helpers (`tests/setup/helpers.js`); wrote unit tests for pure scoring (`scoring.service.test.js`), authentication (`auth.service.test.js`), session answer validation (`session.service.test.js`), and question edit guards (`question.service.test.js`); wrote Supertest integration test suites covering hub, CORS enforcement, auth workflows, question bank management, and end-to-end game session lifecycles; achieved 68.33% line coverage across all modules; and finalized Render deployment preparation with strict CORS allow-listing, security headers via Helmet, and a production admin bootstrap script.
+- Evidence: PR (`feature/tests` -> `main`) · Commits: `5b07f8f`, `8cb3600`, `49af041`, `3cdd77c` · `npm run check` passing all K and L checks (30 tests in 10 files, 68.33% line coverage, CORS allowed/refused checks passing).
 - Problem I hit: Early Jest runs encountered database pool collisions when test suites closed Sequelize connections prematurely, and test database schema teardowns occasionally conflicted if tables didn't exist yet on a fresh run.
-- How I solved it: Replaced db:migrate:undo:all in global-setup.js with a robust DROP SCHEMA public CASCADE; CREATE SCHEMA public; reset and centralized Sequelize connection closure into a single 	ests/setup/after-env.js setup file so connection pools remain open until all 10 test suites complete cleanly.
-- Decision I made and why: Used --runInBand for test execution to ensure sequential database operations on the test instance, avoiding race conditions and foreign key locks during concurrent test suite execution.
-- Changes to my design set: Added 	ests/setup/ and 	ests/unit/, 	ests/api/ structure, registered Jest test scripts (	est, 	est:coverage) in package.json, and configured ender.yaml for production deployment.
-- What I would explain to a classmate: Why automated testing needs a completely isolated test database (_test) so it never corrupts local development data, how Supertest mounts Express apps for real HTTP integration testing without manual server binding, and how Jest code coverage calculates line and branch metrics.
+- How I solved it: Replaced `db:migrate:undo:all` in `global-setup.js` with a robust `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` reset and centralized Sequelize connection closure into a single `tests/setup/after-env.js` setup file so connection pools remain open until all 10 test suites complete cleanly.
+- Decision I made and why: Used `--runInBand` for test execution to ensure sequential database operations on the test instance, avoiding race conditions and foreign key locks during concurrent test suite execution.
+- Changes to my design set: Added `tests/setup/` and `tests/unit/`, `tests/api/` structure, registered Jest test scripts (`test`, `test:coverage`) in `package.json`, and configured `render.yaml` for production deployment.
+- What I would explain to a classmate: Why automated testing needs a completely isolated test database (`_test`) so it never corrupts local development data, how Supertest mounts Express apps for real HTTP integration testing without manual server binding, and how Jest code coverage calculates line and branch metrics.
 
-## M5 Â· API documentation and deployment", (Get-Clipboard) | Set-Content "docs\development-journey.md" -Encoding UTF8  # Wait, let's write it directly using a robust script or append it cleanly:
-
-## M6 Â· The SE1 portfolio and the release
-
-## M7 Â· The Test Report
-
-
+## M5 · API documentation and deployment
