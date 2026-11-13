@@ -12,3 +12,4 @@
 ame, created_at, updated_at.
 9. **chest_offers**: Game reward offers available for sessions. Fields: id, 	itle, created_at, updated_at.
 10. **chest_slots**: Player inventory slots for rewards and unlocked chests. Fields: id, player_id, chest_offer_id, created_at, updated_at.
+

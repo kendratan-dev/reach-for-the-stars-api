@@ -49,3 +49,4 @@ One entry per milestone, written the week you did it. Newest at the bottom.
 - What I would explain to a classmate: Why automated testing needs a completely isolated test database (`_test`) so it never corrupts local development data, how Supertest mounts Express apps for real HTTP integration testing without manual server binding, and how Jest code coverage calculates line and branch metrics.
 
 ## M5 · API documentation and deployment
+
