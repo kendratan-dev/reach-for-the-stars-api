@@ -31,3 +31,4 @@ How each kind of user works with the API. Base URL: [your live address]/api/v1. 
 [Your description: the error format, and the codes a user of your game is most likely to meet.]
 
 
+
