@@ -15,8 +15,7 @@
     "db:reset": "node scripts/db-wipe.js && sequelize-cli db:migrate && sequelize-cli db:seed:all",
     "db:check": "node scripts/db-check.js",
     "check": "node scripts/ci-check.js",
-    "start:render": "sequelize-cli db:migrate && node scripts/create-admin.js && node src/server.js",
-    "test": "jest --runInBand",
+    "start:render": "npx sequelize-cli db:migrate && node scripts/create-admin.js && node src/server.js"    "test": "jest --runInBand",
     "test:coverage": "jest --runInBand --coverage"
   },
   "engines": {
