@@ -1,4 +1,4 @@
-// Week 14: the first ADMIN account on a server that has no seed data.
+﻿// Week 14: the first ADMIN account on a server that has no seed data.
 // On Render it runs on every start (see "start:render" in package.json) and does
 // nothing once the account exists. It reads two settings you type in the Render
 // dashboard, never in a file:  ADMIN_SCHOOL_ID  and  ADMIN_PASSWORD.
@@ -16,6 +16,7 @@ async function main() {
   const [, created] = await User.findOrCreate({
     where: { school_id: schoolId },
     defaults: {
+      username: schoolId,
       full_name: 'Library Administrator',
       email: `${schoolId}@admin.invalid`,
       role: 'ADMIN',
@@ -31,3 +32,4 @@ main()
     process.exitCode = 1;
   })
   .finally(() => sequelize.close());
+

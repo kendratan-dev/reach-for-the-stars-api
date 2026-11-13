@@ -1,10 +1,21 @@
-const path = require('path');
+﻿const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
+const helmet = require('helmet');
+const cors = require('cors');
+const env = require('./config/env');
 const hubRoutes = require('./routes/hub.routes');
 const apiRoutes = require('./routes');
 
 const app = express();
+
+app.set('trust proxy', 1);
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(
+  cors({
+    origin: (origin, done) => done(null, !origin || env.corsOrigins.includes(origin)),
+  })
+);
 
 app.use(morgan('dev'));
 app.use(express.json());
@@ -30,7 +41,6 @@ app.use((req, res) => {
 
 // Global JSON error handler
 app.use((err, req, res, next) => {
-  // Handle duplicate school_id or email from Sequelize
   if (err.name === 'SequelizeUniqueConstraintError') {
     const field = err.errors?.[0]?.path || 'field';
     return res.status(409).json({

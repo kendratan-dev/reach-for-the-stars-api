@@ -1,13 +1,8 @@
-const { Sequelize, DataTypes } = require('sequelize');
+﻿const { Sequelize, DataTypes } = require('sequelize');
 const env = require('../config/env');
 const dbConfig = require('../config/database')[env.nodeEnv];
 
-const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
-  dbConfig
-);
+const sequelize = dbConfig.url ? new Sequelize(dbConfig.url, dbConfig) : new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig);
 
 const User = require('./user')(sequelize, DataTypes);
 const QuestionSet = require('./question-set')(sequelize, DataTypes);
@@ -56,3 +51,4 @@ module.exports = {
   SessionPlayer,
   Answer,
 };
+
