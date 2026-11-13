@@ -1,9 +1,7 @@
-// HTTP tests with supertest: a real request goes through the whole app
+﻿// HTTP tests with supertest: a real request goes through the whole app
 // (middleware, validator, controller, service, repository) to the TEST database.
 const { app, request } = require('../setup/helpers');
-const { sequelize } = require('../../src/models');
 
-afterAll(() => sequelize.close());
 
 test('GET /health answers 200 with the database up', async () => {
   const res = await request(app).get('/api/v1/health');
@@ -35,3 +33,4 @@ describe('CORS', () => {
     expect(res.headers['access-control-allow-origin']).toBeUndefined();
   });
 });
+

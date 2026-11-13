@@ -1,15 +1,25 @@
-// Small helpers shared by the HTTP tests.
-const request = require('supertest');
+﻿const request = require('supertest');
 const app = require('../../src/app');
 
-// CHANGE THIS to the demo password your own seeder gives your test accounts (Week 12, Step 2).
-const DEMO_PASSWORD = 'Aklat-Demo-2026';
+const DEMO_PASSWORD = 'Pass1234!';
 
-// Logs in a seeded account and returns its "Authorization" header value.
-async function bearer(schoolId) {
-  const res = await request(app).post('/api/v1/auth/login').send({ school_id: schoolId, password: DEMO_PASSWORD });
-  if (res.status !== 200) throw new Error(`login of ${schoolId} answered ${res.status}`);
-  return `Bearer ${res.body.token}`;
+let seq = 1000;
+function uniqueSuffix() {
+  seq += 1;
+  return `${Date.now().toString().slice(-4)}${seq}`;
 }
 
-module.exports = { app, request, bearer };
+async function loginAs(schoolId, password = DEMO_PASSWORD) {
+  const res = await request(app)
+    .post('/api/v1/auth/login')
+    .send({ school_id: schoolId, password });
+  return res.body.token;
+}
+
+module.exports = {
+  app,
+  request,
+  DEMO_PASSWORD,
+  uniqueSuffix,
+  loginAs,
+};
