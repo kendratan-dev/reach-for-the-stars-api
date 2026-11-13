@@ -312,3 +312,206 @@ paths:
                     $ref: "#/components/schemas/User"
         "401":
           $ref: "#/components/responses/Unauthorized"
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: List all users (Admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of users
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /users/{id}/role:
+    patch:
+      tags:
+        - Users
+      summary: Update user role (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Role updated successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /question-sets:
+    get:
+      tags:
+        - Question Sets
+      summary: List paginated question sets
+      responses:
+        "200":
+          description: Paginated question sets list
+    post:
+      tags:
+        - Question Sets
+      summary: Create a new question set (Host / Admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Created question set
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /question-sets/{id}:
+    get:
+      tags:
+        - Question Sets
+      summary: Get question set details with optional questions include
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Question set details
+        "404":
+          description: Not found
+
+  /question-sets/{id}/questions:
+    post:
+      tags:
+        - Questions
+      summary: Add a question to a question set
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Question created
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /sessions:
+    post:
+      tags:
+        - Sessions
+      summary: Create a new game session
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Session created
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /sessions/{code}:
+    get:
+      tags:
+        - Sessions
+      summary: Get session details by join code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session details
+        "404":
+          description: Not found
+    patch:
+      tags:
+        - Sessions
+      summary: Update session status or position (Host)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session updated
+
+  /sessions/{code}/players:
+    post:
+      tags:
+        - Sessions
+      summary: Join a game session as a player
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Joined successfully
+
+  /sessions/{code}/question:
+    get:
+      tags:
+        - Gameplay
+      summary: Get the current active question for a running session
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active question details
+
+  /sessions/{code}/answers:
+    post:
+      tags:
+        - Gameplay
+      summary: Submit an answer for the current active question
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Answer recorded and scored
+        "409":
+          description: Already answered or session not running
+
+  /sessions/{code}/leaderboard:
+    get:
+      tags:
+        - Gameplay
+      summary: Get the current leaderboard for a session
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session leaderboard rankings
