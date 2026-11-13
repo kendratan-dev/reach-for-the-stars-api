@@ -22,9 +22,29 @@ async function get(req, res) {
 
 async function updateStatus(req, res) {
   const { code } = req.params;
-  const { status } = req.body;
-  const session = await sessionService.changeStatus(code, status, req.user);
+  const { status, current_position } = matchedData(req, { locations: ['body'] });
+  const session = await sessionService.patchSession(code, { status, current_position }, req.user);
   res.status(200).json({ data: session });
+}
+
+async function getQuestion(req, res) {
+  const { code } = req.params;
+  const question = await sessionService.getCurrentQuestion(code);
+  res.status(200).json(question);
+}
+
+async function submitAnswer(req, res) {
+  const { code } = req.params;
+  const payload = matchedData(req, { locations: ['body'] });
+  const result = await sessionService.submitAnswer(code, payload, req.user);
+  res.status(201).json(result);
+}
+
+async function leaderboard(req, res) {
+  const { code } = req.params;
+  const { limit } = matchedData(req, { locations: ['query'] });
+  const board = await sessionService.getLeaderboard(code, limit || 10);
+  res.status(200).json(board);
 }
 
 module.exports = {
@@ -33,4 +53,7 @@ module.exports = {
   getSession: get,
   updateStatus,
   changeStatus: updateStatus,
+  getQuestion,
+  submitAnswer,
+  leaderboard,
 };

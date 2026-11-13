@@ -1,4 +1,4 @@
-const { Router } = require('express');
+﻿const { Router } = require('express');
 const sessionController = require('../controllers/session.controller');
 const playerController = require('../controllers/player.controller');
 const rules = require('../validators/session.validator');
@@ -10,7 +10,12 @@ const router = Router();
 // Host endpoints
 router.post('/', requireUser('HOST', 'ADMIN'), rules.createRules, validate, sessionController.create);
 router.get('/:code', rules.codeParam, validate, sessionController.get);
-router.patch('/:code', requireUser('HOST', 'ADMIN'), rules.statusRules, validate, sessionController.changeStatus);
+router.patch('/:code', requireUser('HOST', 'ADMIN'), rules.patchSessionRules, validate, sessionController.updateStatus);
+
+// Gameplay endpoints
+router.get('/:code/question', requireUser(), rules.codeParam, validate, sessionController.getQuestion);
+router.post('/:code/answers', requireUser(), rules.answerRules, validate, sessionController.submitAnswer);
+router.get('/:code/leaderboard', rules.leaderboardRules, validate, sessionController.leaderboard);
 
 // Player endpoints mounted under /sessions/:code
 router.post('/:code/players', requireUser(), rules.joinRules, validate, playerController.join);
