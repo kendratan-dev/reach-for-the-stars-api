@@ -1,6 +1,6 @@
 ﻿# Technical specification: Reach for the Stars API
 
-Version 1.0.0, SE1 final build. Developer: Kendra Shanice Tan (kendratan-dev), BSCS 3-1. Group: BSCS 3-1.
+Version 1.0.0, SE1 final build. Developer: Kendra Shanice Tan (kendratan-dev), BSCS 3-1. Group: 5.
 
 ## 1. Purpose and scope
 
@@ -57,3 +57,4 @@ pm run start:render to run migrations and start the server. Subject to Render fr
 | Use Sequelize ORM | Provides robust schema migration, validation, and relational modeling for PostgreSQL. | Raw SQL queries (leads to maintenance overhead). |
 | JWT Authentication | Stateless verification simplifies scaling across cloud instances. | Server-side sessions (requires redis/sticky sessions). |
 | Explicit Health Check Route | Ensures Render pings /api/v1/health and receives immediate 200 OK responses. | Root / endpoint check. |
+
