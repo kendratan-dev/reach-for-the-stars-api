@@ -1,6 +1,6 @@
 ﻿# Technical specification: Reach for the Stars API
 
-Version 1.0.0, SE1 final build. Developer: Kendra Shanice Tan (kendratan-dev), BSCS 3-1. Group: 5.
+Version 1.0.0, SE1 final build. Developer: Kendra Shanice Tan (kendratan-dev), BSCS 3-1. Group: BSCS 3-1.
 
 ## 1. Purpose and scope
 
@@ -14,12 +14,12 @@ A request enters the Express application, passes through security middleware (He
 
 | Layer | Folder | Responsibility | Never |
 |---|---|---|---|
-| Routes | `src/routes` | Define URL endpoints and map to controllers | Directly access database or contain business logic |
-| Validators | `src/validators` | Validate request body, query parameters, and headers | Perform database queries or business operations |
-| Controllers | `src/controllers` | Handle HTTP requests, call services, return responses | Contain direct SQL queries or validation rules |
-| Services | `src/services` | Implement core game rules, authentication, and logic | Interact directly with Express req/res objects |
-| Repositories | `src/repositories` | Execute database queries via Sequelize ORM | Handle HTTP status codes or request formatting |
-| Models | `src/models` | Define Sequelize database schemas and associations | Execute HTTP request/response handling |
+| Routes | src/routes | Define URL endpoints and map to controllers | Directly access database or contain business logic |
+| Validators | src/validators | Validate request body, query parameters, and headers | Perform database queries or business operations |
+| Controllers | src/controllers | Handle HTTP requests, call services, return responses | Contain direct SQL queries or validation rules |
+| Services | src/services | Implement core game rules, authentication, and logic | Interact directly with Express req/res objects |
+| Repositories | src/repositories | Execute database queries via Sequelize ORM | Handle HTTP status codes or request formatting |
+| Models | src/models | Define Sequelize database schemas and associations | Execute HTTP request/response handling |
 
 ## 3. Data
 
@@ -27,7 +27,7 @@ The database consists of 10 normalized tables managed via Sequelize migrations a
 
 ![ERD](diagrams/erd.png)
 
-Database constraints include primary keys, foreign key relations with cascade/restrict rules, UNIQUE constraints (such as `uq_session_user_seat` ensuring one seat per account per game on session players), and check constraints mapped in constraint-map.js.
+Database constraints include primary keys, foreign key relations with cascade/restrict rules, UNIQUE constraints (such as uq_session_user_seat ensuring one seat per account per game on session players), and check constraints mapped in constraint-map.js.
 
 ## 4. Security
 
@@ -38,8 +38,8 @@ Database constraints include primary keys, foreign key relations with cascade/re
 | Roles | Role-based access control (PLAYER vs ADMIN) enforced on sensitive endpoints. |
 | Input | Strict Joi/Express validation on all incoming request payloads. |
 | Your game's trust boundary | Server validates all game progression, answer correctness, and scoring instead of trusting the client. |
-| Browsers (CORS) | Restricted to origins specified in `CORS_ORIGINS` environment variable. |
-| The Hub | Authenticated via `X-Hub-Key` header for retrieving finished game results. |
+| Browsers (CORS) | Restricted to origins specified in CORS_ORIGINS environment variable. |
+| The Hub | Authenticated via X-Hub-Key header for retrieving finished game results. |
 
 ## 5. Quality
 
@@ -47,7 +47,8 @@ The test suite includes 33 comprehensive unit and HTTP tests built with Jest and
 
 ## 6. Deployment
 
-Hosted on Render web service and managed PostgreSQL 18 database in Singapore. Uses `npm run start:render` to run migrations and start the server. Subject to Render free tier spin-down limits.
+Hosted on Render web service and managed PostgreSQL 18 database in Singapore. Uses 
+pm run start:render to run migrations and start the server. Subject to Render free tier spin-down limits.
 
 ## 7. Decisions and their reasons
 
@@ -55,4 +56,4 @@ Hosted on Render web service and managed PostgreSQL 18 database in Singapore. Us
 |---|---|---|
 | Use Sequelize ORM | Provides robust schema migration, validation, and relational modeling for PostgreSQL. | Raw SQL queries (leads to maintenance overhead). |
 | JWT Authentication | Stateless verification simplifies scaling across cloud instances. | Server-side sessions (requires redis/sticky sessions). |
-| Explicit Health Check Route | Ensures Render pings `/api/v1/health` and receives immediate 200 OK responses. | Root `/` endpoint check. |
+| Explicit Health Check Route | Ensures Render pings /api/v1/health and receives immediate 200 OK responses. | Root / endpoint check. |
