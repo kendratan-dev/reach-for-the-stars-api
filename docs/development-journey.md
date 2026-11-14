@@ -47,7 +47,14 @@ One entry per milestone, written the week you did it. Newest at the bottom.
 - Decision I made and why: Used `--runInBand` for test execution to ensure sequential database operations on the test instance, avoiding race conditions and foreign key locks during concurrent test suite execution.
 - Changes to my design set: Added `tests/setup/` and `tests/unit/`, `tests/api/` structure, registered Jest test scripts (`test`, `test:coverage`) in `package.json`, and configured `render.yaml` for production deployment.
 - What I would explain to a classmate: Why automated testing needs a completely isolated test database (`_test`) so it never corrupts local development data, how Supertest mounts Express apps for real HTTP integration testing without manual server binding, and how Jest code coverage calculates line and branch metrics.
-
 ## M5 · API documentation and deployment
-
-
+- Dates worked: Nov 13–14, 2026 · Time spent: 3 hours
+- Goal: Finalize OpenAPI specification, clean portfolio documentation placeholders, mount Swagger UI, and achieve successful production deployment on Render with 55/55 automated checks passing.
+- What I built: Polished the OpenAPI 3.0 specification (src/docs/openapi.yaml) covering all 19 required operations with summaries, tags, security schemes, and responses; mounted swagger-ui-express and JSON endpoints at /docs and /openapi.json in src/app.js; cleared all portfolio documentation placeholders across docs/ (	echnical-spec.md, user-guide.md, se2-handoff.md, pi-reference.md, data-dictionary.md) with correct Group 5 identification; and successfully deployed the API to Render (https://reach-for-the-stars-kendratan.onrender.com) with live PostgreSQL connectivity.
+- Evidence: PR (eature/m5-deploy -> main) · Commits: 62f3e7, 54219b, 77b3a3c, 21011ba, 7f73acd · 
+pm run check passing all 55/55 checks (100% success across database, auth, question bank, gameplay, CORS, OpenAPI spec, live health check, and portfolio docs).
+- Problem I hit: Initially encountered a 404 Not Found error when visiting /docs on Render because the Swagger UI route mounting code was not yet added to src/app.js.
+- How I solved it: Explicitly imported swagger-ui-express and yaml, loaded src/docs/openapi.yaml, mounted /docs and /openapi.json in src/app.js, pushed the update to GitHub, and cleared the build cache on Render.
+- Decision I made and why: Served the OpenAPI specification dynamically from the local YAML file via swagger-ui-express so the interactive documentation always stays synchronized with code updates.
+- Changes to my design set: Added Swagger UI mounting in src/app.js, finalized the OpenAPI schema, and completed all portfolio documentation files.
+- What I would explain to a classmate: How Swagger UI parses OpenAPI 3 YAML files to generate interactive API testing interfaces, and how to verify live production deployments using health check endpoints.
