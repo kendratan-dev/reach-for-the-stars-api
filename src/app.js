@@ -1,8 +1,11 @@
 ﻿const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yaml');
 const env = require('./config/env');
 const { sequelize } = require('./models');
 const hubRoutes = require('./routes/hub.routes');
@@ -33,6 +36,23 @@ app.get('/api/v1/health', async (req, res) => {
 
 // Serve uploaded cover images statically
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+// Mount Swagger UI and OpenAPI JSON
+try {
+  let file;
+  if (fs.existsSync(path.join(__dirname, 'docs', 'openapi.yaml'))) {
+    file = fs.readFileSync(path.join(__dirname, 'docs', 'openapi.yaml'), 'utf8');
+  } else if (fs.existsSync(path.join(__dirname, 'src', 'docs', 'openapi.yaml'))) {
+    file = fs.readFileSync(path.join(__dirname, 'src', 'docs', 'openapi.yaml'), 'utf8');
+  }
+  if (file) {
+    const swaggerDocument = YAML.parse(file);
+    app.get('/openapi.json', (req, res) => res.json(swaggerDocument));
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  }
+} catch (e) {
+  console.warn('Swagger UI setup warning:', e.message);
+}
 
 // Mount hub routes under /api/v1 (matches BASE URL in ci-check.js)
 app.use('/api/v1', hubRoutes);
