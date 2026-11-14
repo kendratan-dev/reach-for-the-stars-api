@@ -10,16 +10,6 @@ const apiRoutes = require('./routes');
 
 const app = express();
 
-// Explicit health check endpoint for Render
-app.get('/api/v1/health', async (req, res) => {
-  try {
-    await sequelize.authenticate();
-    res.status(200).json({ database: 'up' });
-  } catch (err) {
-    res.status(500).json({ database: 'down', error: err.message });
-  }
-});
-
 app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(
@@ -30,6 +20,16 @@ app.use(
 
 app.use(morgan('dev'));
 app.use(express.json());
+
+// Explicit health check endpoint for Render (placed AFTER CORS middleware)
+app.get('/api/v1/health', async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.status(200).json({ database: 'up' });
+  } catch (err) {
+    res.status(500).json({ database: 'down', error: err.message });
+  }
+});
 
 // Serve uploaded cover images statically
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
