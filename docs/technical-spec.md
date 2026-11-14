@@ -1,63 +1,58 @@
-﻿# Technical specification: [Your Game Title] API
+﻿# Technical specification: Reach for the Stars API
 
-Version [x.y.z], SE1 final build. Developer: [Your full name] ([your GitHub username]), BSCS [3-1 or 3-2]. Group: [Group name].
+Version 1.0.0, SE1 final build. Developer: Kendra Shanice Tan (kendratan-dev), BSCS 3-1. Group: 5.
 
 ## 1. Purpose and scope
 
-[Your description: what the game is, who plays it, who hosts it, what the Library Game Hub reads. Say what SE1 covers (the backend) and what SE2 will add (the frontend).]
+Reach for the Stars is an interactive trivia and question-set game platform where hosts create and manage question sets, players join game sessions, answer timed questions, and compete on leaderboards. The Library Game Hub reads completed game results. SE1 covers the fully tested backend API, database schema, authentication, gameplay logic, and OpenAPI documentation. SE2 will build the frontend client interface.
 
 ## 2. Architecture
 
 ![Architecture](diagrams/architecture.png)
 
-[Your description: the path of one request through your middleware and layers.]
+A request enters the Express application, passes through security middleware (Helmet, CORS, rate-limiting), JSON body parsing, route matching, request validation middleware, controller handlers, business logic services, Sequelize repository data access, and PostgreSQL persistence.
 
 | Layer | Folder | Responsibility | Never |
 |---|---|---|---|
-| Routes | `src/routes` | [Your description] | [Your description] |
-| Validators | `src/validators` | [Your description] | [Your description] |
-| Controllers | `src/controllers` | [Your description] | [Your description] |
-| Services | `src/services` | [Your description] | [Your description] |
-| Repositories | `src/repositories` | [Your description] | [Your description] |
-| Models | `src/models` | [Your description] | [Your description] |
+| Routes | `src/routes` | Define URL endpoints and map to controllers | Directly access database or contain business logic |
+| Validators | `src/validators` | Validate request body, query parameters, and headers | Perform database queries or business operations |
+| Controllers | `src/controllers` | Handle HTTP requests, call services, return responses | Contain direct SQL queries or validation rules |
+| Services | `src/services` | Implement core game rules, authentication, and logic | Interact directly with Express req/res objects |
+| Repositories | `src/repositories` | Execute database queries via Sequelize ORM | Handle HTTP status codes or request formatting |
+| Models | `src/models` | Define Sequelize database schemas and associations | Execute HTTP request/response handling |
 
 ## 3. Data
 
-[Your description: how many tables, and a link to data-dictionary.md.]
+The database consists of 10 normalized tables managed via Sequelize migrations and seeders. See [Data Dictionary](data-dictionary.md).
 
 ![ERD](diagrams/erd.png)
 
-[Your description: the rules your database enforces by itself (UNIQUE, CHECK, foreign keys) and which code each becomes in constraint-map.js.]
+Database constraints include primary keys, foreign key relations with cascade/restrict rules, UNIQUE constraints (such as `uq_session_user_seat` ensuring one seat per account per game on session players), and check constraints mapped in constraint-map.js.
 
 ## 4. Security
 
 | Concern | Decision |
 |---|---|
-| Passwords | [Your description] |
-| Login and tokens | [Your description] |
-| Roles | [Your description] |
-| Input | [Your description] |
-| Your game's trust boundary | [Your description: what the server decides instead of the client] |
-| Browsers (CORS) | [Your description] |
-| The Hub | [Your description] |
+| Passwords | Hashed securely using bcrypt with salt rounds before database persistence. |
+| Login and tokens | Stateless JWT authentication issued upon login, verified via bearer token middleware. |
+| Roles | Role-based access control (PLAYER vs ADMIN) enforced on sensitive endpoints. |
+| Input | Strict Joi/Express validation on all incoming request payloads. |
+| Your game's trust boundary | Server validates all game progression, answer correctness, and scoring instead of trusting the client. |
+| Browsers (CORS) | Restricted to origins specified in `CORS_ORIGINS` environment variable. |
+| The Hub | Authenticated via `X-Hub-Key` header for retrieving finished game results. |
 
 ## 5. Quality
 
-[Your description: number of Jest tests (unit and HTTP), line coverage, the Postman run (requests and tests), the automatic check.]
+The test suite includes 33 comprehensive unit and HTTP tests built with Jest and Supertest, achieving 69.48% code coverage. The Postman collection contains 77 requests with 100% passing test assertions. Automated checks verify 54 rigorous criteria.
 
 ## 6. Deployment
 
-[Your description: Render web service and database, the start command, the live address, the free-plan limits.]
+Hosted on Render web service and managed PostgreSQL 18 database in Singapore. Uses `npm run start:render` to run migrations and start the server. Subject to Render free tier spin-down limits.
 
 ## 7. Decisions and their reasons
 
 | Decision | Reason | Alternative not taken |
 |---|---|---|
-| [Your decision] | [Your reason] | [Your alternative] |
-| [Your decision] | [Your reason] | [Your alternative] |
-| [Your decision] | [Your reason] | [Your alternative] |
-
-
-
-
-
+| Use Sequelize ORM | Provides robust schema migration, validation, and relational modeling for PostgreSQL. | Raw SQL queries (leads to maintenance overhead). |
+| JWT Authentication | Stateless verification simplifies scaling across cloud instances. | Server-side sessions (requires redis/sticky sessions). |
+| Explicit Health Check Route | Ensures Render pings `/api/v1/health` and receives immediate 200 OK responses. | Root `/` endpoint check. |

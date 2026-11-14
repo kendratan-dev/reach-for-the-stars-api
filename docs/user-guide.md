@@ -1,36 +1,31 @@
-﻿# User guide: [Your Game Title] API
+﻿# User guide: Reach for the Stars API
 
-How each kind of user works with the API. Base URL: [your live address]/api/v1. Every endpoint can be tried in Swagger UI at `/docs/`.
+How each kind of user works with the API. Base URL: https://reach-for-the-stars-kendratan.onrender.com/api/v1. Every endpoint can be tried in Swagger UI at `/docs/`.
 
 ## Players
 
-1. [Your step: create an account]
-2. [Your step: log in and keep the token]
-3. [Your step: join a game; what happens on a rejoin]
-4. [Your step: how a player plays your game]
-5. [Your step: the leaderboard or progress]
+1. Create an account via `POST /auth/register` (automatically assigned PLAYER role).
+2. Log in via `POST /auth/login` to receive your JWT token and include it in the `Authorization: Bearer <token>` header.
+3. Join a game session using `POST /api/v1/sessions/:id/players`. Rejoining resumes existing player state.
+4. Play through questions by submitting answers to `POST /api/v1/sessions/:id/answers`.
+5. Check real-time standings via `GET /api/v1/sessions/:id/leaderboard`.
 
-[Your description: when a player counts as having completed a game.]
+A player counts as having completed a game when they finish all questions in a session before game closure.
 
 ## Hosts
 
-1. [Your step: prepare the content of a game]
-2. [Your step: start a game and show the code]
-3. [Your step: run the game to the end]
+1. Prepare question sets and questions using `POST /api/v1/question-sets`.
+2. Start a game session and share the session code with players.
+3. Monitor and run the game session to completion.
 
 ## Admins
 
-[Your description: managing accounts and roles; the first admin on a new server.]
+Admins manage user accounts and roles via admin endpoints (e.g., updating user roles). The initial admin account is provisioned during server startup/seeding.
 
 ## The Library Game Hub
 
-[Your description: GET /results with X-Hub-Key, ?since=, what each game lists.]
+The Hub queries finished game results via `GET /api/v1/results` using the `X-Hub-Key` header, supporting `?since=` timestamp filtering.
 
 ## When something goes wrong
 
-[Your description: the error format, and the codes a user of your game is most likely to meet.]
-
-
-
-
-
+Errors return in a standardized JSON error format with appropriate HTTP status codes (e.g., 400 for validation errors, 401 for unauthorized access, 409 for conflicts, 404 for missing resources).
