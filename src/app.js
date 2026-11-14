@@ -4,10 +4,21 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const cors = require('cors');
 const env = require('./config/env');
+const { sequelize } = require('./models');
 const hubRoutes = require('./routes/hub.routes');
 const apiRoutes = require('./routes');
 
 const app = express();
+
+// Explicit health check endpoint for Render
+app.get('/api/v1/health', async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.status(200).json({ database: 'up' });
+  } catch (err) {
+    res.status(500).json({ database: 'down', error: err.message });
+  }
+});
 
 app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
